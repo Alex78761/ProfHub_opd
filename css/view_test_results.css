@@ -1,0 +1,77 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    color: white;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+h4 {
+    margin-bottom: 5px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    
+}
+
+table th, table td {
+    padding: 8px;
+    border: 1px solid darkcyan;
+}
+
+
+#progress_chart_div {
+    margin-top: 20px;
+}
+
+h2 {
+   
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    border-radius: 5px;
+    
+}
+h3 {
+    padding-left: 20px;
+    max-width: 630px;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 5px;
+ 
+}
+body a:not(header a) {
+    color: white; /* Белый цвет текста */
+    text-decoration: none; /* Убираем стандартное подчеркивание */
+    position: relative; /* Позиционируем ссылку относительно своего контейнера */
+    overflow: hidden; /* Обрезаем лишний фон */
+    font-size: 30px;
+}
+
+body a:not(header a)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0; /* Начальная ширина линии */
+    height: 2px; /* Толщина линии */
+    background: white; /* Белый цвет линии */
+    transition: width 0.3s ease; /* Анимация изменения ширины */
+    
+}
+
+body a:not(header a):hover::before {
+    width: 100%; /* Расширяем линию до 100% ширины при наведении */
+}

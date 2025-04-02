@@ -1,0 +1,55 @@
+body {
+    font-family: Arial, sans-serif;
+    color: #ffd700; /* Жёлтый цвет текста */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+}
+
+.container {
+    background-color: rgba(0, 0, 0, 0.5); /* Чёрный цвет фона для контейнера с прозрачностью 50% */
+    padding: 20px; /* Добавляем отступы вокруг текста */
+    border-radius: 10px; /* Закругляем углы */
+    backdrop-filter: blur(10px);
+}
+
+h2 {
+    color: white; /* Жёлтый цвет для заголовков */
+    margin-top: 20px; /* Отступ сверху */
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+/* Стили для всех ссылок, кроме тех, что внутри заголовка */
+body a:not(header a) {
+    color: white; /* Белый цвет текста */
+    text-decoration: none; /* Убираем стандартное подчеркивание */
+    position: relative; /* Позиционируем ссылку относительно своего контейнера */
+    overflow: hidden; /* Обрезаем лишний фон */
+}
+
+body a:not(header a)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0; /* Начальная ширина линии */
+    height: 2px; /* Толщина линии */
+    background: white; /* Белый цвет линии */
+    transition: width 0.3s ease; /* Анимация изменения ширины */
+}
+
+body a:not(header a):hover::before {
+    width: 100%; /* Расширяем линию до 100% ширины при наведении */
+}

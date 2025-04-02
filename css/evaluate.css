@@ -1,0 +1,64 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    color: white; /* Цвет текста */
+    margin: 0;
+    padding: 0;
+    display: flex; /* Используем flexbox */
+    justify-content: center; /* Выравниваем контейнер по центру по горизонтали */
+    align-items: center; /* Выравниваем контейнер по центру по вертикали */
+    min-height: 100vh; /* Задаем минимальную высоту, чтобы контейнер был по центру, даже если контента мало */
+    padding-top: 50px; /* Высота header */
+    
+}
+
+
+.container {
+    margin-top: 50px;
+    text-align: left;
+    max-width: 800px; /* Ширина контейнера */
+    background-color: rgba(0, 0, 0, 0.5); /* Чёрный цвет фона для контейнера с прозрачностью 50% */
+    padding: 20px; /* Добавляем отступы вокруг текста */
+    border-radius: 10px; /* Закругляем углы */
+}
+
+h2 {
+    text-align: center; /* Выравнивание заголовка по центру */
+    color: white; /* Жёлтый цвет текста */
+}
+
+form {
+    text-align: left; /* Выравнивание текста в форме по центру */
+    margin-top: 20px; /* Отступ сверху */
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+select,
+input[type="number"] {
+    padding: 10px; /* Внутренние отступы */
+    margin: 5px; /* Внешние отступы */
+    border: none; /* Убираем границы */
+    border-radius: 5px; /* Скругляем углы */
+    background-color: darkcyan;
+    color: white; /* Чёрный цвет текста */
+}
+
+input[type="submit"] {
+    padding: 10px 20px; /* Внутренние отступы по вертикали и горизонтали */
+    margin: 10px; /* Внешние отступы */
+    border: none; /* Убираем границы */
+    border-radius: 5px; /* Скругляем углы */
+    background-color: darkcyan;
+    color: white; /* Чёрный цвет текста */
+    cursor: pointer; /* Указатель мыши при наведении */
+    transition: all 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}

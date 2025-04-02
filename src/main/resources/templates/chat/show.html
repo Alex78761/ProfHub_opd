@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат - ProfHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <style>
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .message-own {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .message-other {
+            background-color: #f8f9fa;
+            margin-right: 20%;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <main class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">
+                                <span sec:authorize="hasRole('CONSULTANT')" 
+                                      th:text="${chat.user.username}">Пользователь</span>
+                                <span sec:authorize="!hasRole('CONSULTANT')" 
+                                      th:text="${chat.consultant != null ? chat.consultant.username : 'Ожидание консультанта'}">
+                                    Консультант
+                                </span>
+                            </h2>
+                            <small class="text-muted" th:text="${#temporals.format(chat.createdAt, 'dd.MM.yyyy HH:mm')}">Время</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge me-2" 
+                                  th:classappend="${chat.status == T(com.itportal.model.ChatStatus).WAITING ? 'bg-warning' : 
+                                                  chat.status == T(com.itportal.model.ChatStatus).ACTIVE ? 'bg-success' : 'bg-secondary'}"
+                                  th:text="${chat.status}">Статус</span>
+                            <form th:if="${chat.status != T(com.itportal.model.ChatStatus).CLOSED}" 
+                                  th:action="@{'/chat/' + ${chat.id} + '/close'}" 
+                                  method="post" 
+                                  class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Закрыть чат</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chat-messages mb-3">
+                            <div th:each="message : ${chat.messages}" 
+                                 th:class="${message.user.id == #authentication.principal.id ? 'message message-own' : 'message message-other'}">
+                                <div class="d-flex justify-content-between">
+                                    <strong th:text="${message.user.username}">Пользователь</strong>
+                                    <small th:text="${#temporals.format(message.createdAt, 'dd.MM.yyyy HH:mm')}">Время</small>
+                                </div>
+                                <div th:text="${message.content}">Сообщение</div>
+                            </div>
+                        </div>
+                        <form th:if="${chat.status != T(com.itportal.model.ChatStatus).CLOSED}" 
+                              th:action="@{'/chat/' + ${chat.id} + '/messages'}" 
+                              th:object="${newMessage}" 
+                              method="post">
+                            <div class="mb-3">
+                                <textarea class="form-control" th:field="*{content}" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Отправить</button>
+                        </form>
+                        <div th:if="${chat.status == T(com.itportal.model.ChatStatus).CLOSED}" 
+                             class="alert alert-info text-center">
+                            Чат закрыт
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Прокрутка чата вниз при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            var chatMessages = document.querySelector('.chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    </script>
+</body>
+</html> 
