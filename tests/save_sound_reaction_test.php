@@ -2,7 +2,7 @@
 session_start();
 
 // Подключение к базе данных
-require_once "../db_connect.php";
+require_once "../db-connect.php";
 
 // Проверяем, была ли отправлена форма для сохранения результатов теста
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
         $test_name = "реакция на звук";
 
         // Получаем test_id по test_type и test_name из таблицы tests
-        $stmt_test_id = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+        $stmt_test_id = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
         $stmt_test_id->bind_param("ss", $test_type, $test_name);
         $stmt_test_id->execute();
         $result_test_id = $stmt_test_id->get_result();
@@ -29,21 +29,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
             $test_id = $row_test_id['id'];
 
             // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-            $stmt->bind_param("idd", $user_id, $test_id, $avgReactionTime); // 'idd' представляет собой типы данных: integer, integer, double/float
+            $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result, score) VALUES (?, ?, ?, ?, ?)");
+            $result_value = floatval($avgReactionTime); // Преобразуем в число
+            $stmt->bind_param("iisdd", $user_id, $test_id, $test_name, $result_value, $result_value);
             if ($stmt->execute()) {
                 echo "Результаты успешно сохранены";
             } else {
-                echo "Ошибка при сохранении результатов: " . $mysqli->error;
+                echo "Ошибка при сохранении результатов: " . $conn->error;
             }
-            $stmt->close(); // Закрытие подготовленного запроса
+            $stmt->close();
         } else {
             echo "Ошибка при получении идентификатора теста";
         }
-        $stmt_test_id->close(); // Закрытие подготовленного запроса для получения test_id
+        $stmt_test_id->close();
     } else {
         // Пользователь не авторизован, сохраняем данные в сессию
-        $_SESSION['guest_avg_reaction_time_color'] = $avgReactionTime;
+        $_SESSION['guest_avg_reaction_time_sound'] = $avgReactionTime;
         echo "Результаты успешно сохранены в сессии";
     }
 } else {

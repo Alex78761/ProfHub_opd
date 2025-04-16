@@ -3,22 +3,22 @@ session_start();
 require '../db-connect.php';
 
 // Проверка и обработка AJAX запроса
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['finalScore'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['score'])) {
     $userId = $_SESSION['user_id'] ?? null;
     if ($userId === null) {
         echo "Ошибка: идентификатор пользователя не установлен.";
         exit;
     }
-    $finalScore = floatval($_POST['finalScore']);  // Получаем и конвертируем finalScore из строки в число
-    saveResult($userId, $finalScore);
+    $score = floatval($_POST['score']);  // Получаем и конвертируем score из строки в число
+    saveResult($userId, $score);
     exit;  // Завершаем скрипт после обработки AJAX запроса
 }
 
 function getTestId($testType, $testName) {
-    require '../db-connect.php';
-    $stmt = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
     if ($stmt === false) {
-        die("Ошибка подготовки запроса: " . $mysqli->error);
+        die("Ошибка подготовки запроса: " . $conn->error);
     }
     $stmt->bind_param("ss", $testType, $testName);
     $stmt->execute();
@@ -29,277 +29,370 @@ function getTestId($testType, $testName) {
         return $row['id'];
     } else {
         $stmt->close();
-        return null; // Вернуть null, если не найдено совпадений
+        return null;
     }
 }
 
-function saveResult($userId, $finalScore) {
-    require '../db-connect.php';
+function saveResult($userId, $score) {
+    global $conn;
     $testType = "Оценка мышления";
     $testName = "сравнение";
     
     $testId = getTestId($testType, $testName);
     if ($testId !== null) {
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
         if ($stmt === false) {
-            die("Ошибка подготовки запроса: " . $mysqli->error);
+            die("Ошибка подготовки запроса: " . $conn->error);
         }
-        $stmt->bind_param("iid", $userId, $testId, $finalScore);
+        $stmt->bind_param("iisd", $userId, $testId, $testName, $score);
         if ($stmt->execute()) {
             echo "Результат успешно сохранен.";
         } else {
-            echo "Ошибка при сохранении результата: " . $stmt->error;
+            echo "Ошибка при сохранении результата: " . $conn->error;
         }
         $stmt->close();
     } else {
-        echo "Test ID не найден для '$testType', '$testName'";
+        echo "Ошибка: тест не найден в базе данных.";
     }
-    $mysqli->close();
 }
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тест на сравнение</title>
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
+        body {
             font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
             text-align: center;
         }
+
         .container {
+            max-width: 800px;
+            padding: 20px;
+            display: none; /* Initially hidden */
+        }
+
+        h1 {
+            font-size: 36px;
+            text-align: center;
+        }
+
+        .box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            border: 2px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .box-notice {
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 200px;
+            border: 2px solid #ccc;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .box-notice p {
+            margin: 10px 0;
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .box-notice p:last-child {
+            border-bottom: none;
+        }
+
+        .big-letter {
+            font-size: 72px;
+            font-weight: bold;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
-        button {
-            padding: 10px;
-            margin: 10px;
-            cursor: pointer;
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            text-align: center;
         }
-        .hidden {
-            display: none;
+
+        .result {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .feedback {
+            font-size: 24px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="testTitle">Тест на  сравнение</h1>
-        <p id="testDescription">Выберите ответы, которые лучше всего соответствуют заданным вопросам.</p>
-        <div id="taskContainer" class="hidden"></div>
-        <div id="correctAnswersContainer" class="hidden">Правильных ответов: 0</div>
-        <div id="timerContainer" class="hidden"></div>
-        <div id="resultContainer" class="hidden"></div>
-        <button onclick="startTest()">Начать тест</button>
-        <div id="statusMessage" class="hidden"></div>
-        <button onclick="cancelTest()" class="hidden" style="background-color: red;">Отмена теста</button>
+
+<!-- Модальное окно -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <h1>Тест на сравнение</h1>
+        <h3>Вам будут показаны пары слов. Определите, какое слово больше по значению.</h3>
+        <h2>Введите время теста:</h2>
+        <input type="number" id="countdownInput" placeholder="Введите время (секунды)...">
+        <button onclick="startCountdown()">Начать</button>
+        <button onclick="goBack()">Назад</button>
+        <h3>*После ввода времени браузер начнет отсчет от 3 до 0 для начала теста</h3>
     </div>
+</div>
+
+<div class="container" id="testContainer">
+    <div class="box" id="boxContainer">
+        <div class="big-letter" id="bigLetter">Загрузка...</div>
+    </div>
+
+    <div class="box-notice" id="boxNoticeContainer">
+        <p id="feedback" class="feedback"></p>
+        <p id="turn">Количество отвеченных вопросов: 0</p>
+        <p id="countdownDisplay">Осталось...</p>
+        <p id="correct_streak">Всего правильных ответов: 0</p>
+    </div>
+
+    <div class="button-container" id="buttonContainer">
+        <button id="button1" onclick="chooseWord('left')">Левое слово больше</button>
+        <button id="button2" onclick="chooseWord('right')">Правое слово больше</button>
+        <button onclick="cancelTest()">Отменить тест</button>
+    </div>
+
+    <div class="result" id="resultDisplay"></div>
+</div>
+
     <script>
-        let tasks = [
-    // Easy level tasks
-    { level: 'easy', question: 'Что быстрее: курица или черепаха?', options: ['Курица', 'Черепаха'], answer: 'Курица', score: 1 },
-    { level: 'easy', question: 'Что тяжелее: перо или камень?', options: ['Перо', 'Камень'], answer: 'Камень', score: 1 },
-    { level: 'easy', question: 'Что больше: звезда или планета?', options: ['Звезда', 'Планета'], answer: 'Звезда', score: 1 },
-    { level: 'easy', question: 'Что выше: гора или долина?', options: ['Гора', 'Долина'], answer: 'Гора', score: 1 },
-    { level: 'easy', question: 'Что длиннее: день или ночь?', options: ['День', 'Ночь'], answer: 'День', score: 1 },
+    let countdown;
+    let countdownDisplay = document.getElementById('countdownDisplay');
+    let turnDisplay = document.getElementById('turn');
+    let correctStreakDisplay = document.getElementById('correct_streak');
+    let bigLetter = document.getElementById('bigLetter');
+    let feedback = document.getElementById('feedback');
+    let resultDisplay = document.getElementById('resultDisplay');
+    let correctStreak = 0;
+    let turns = 0;
+    let testContainer = document.getElementById('testContainer');
+    let modal = document.getElementById('myModal');
+    let boxContainer = document.getElementById('boxContainer');
+    let boxNoticeContainer = document.getElementById('boxNoticeContainer');
+    let buttonContainer = document.getElementById('buttonContainer');
+    let currentPair = -1;
+    let interval;
+    let responseReceived = false;
+    let gameStarted = false;
 
-    // Medium level tasks
-    { level: 'medium', question: 'Что быстрее: автомобиль или мотоцикл?', options: ['Автомобиль', 'Мотоцикл', 'Оба одинаково быстры'], answer: 'Оба одинаково быстры', score: 2 },
-    { level: 'medium', question: 'Что выше: дерево или небоскреб?', options: ['Дерево', 'Небоскреб', 'Оба одинаково высоки'], answer: 'Небоскреб', score: 2 },
-    { level: 'medium', question: 'Что сильнее: вода или огонь?', options: ['Вода', 'Огонь', 'Оба одинаково сильны'], answer: 'Оба одинаково сильны', score: 2 },
-    { level: 'medium', question: 'Что больше: книга или журнал?', options: ['Книга', 'Журнал', 'Оба одинаково большие'], answer: 'Книга', score: 2 },
-    { level: 'medium', question: 'Что меньше: планета или галактика?', options: ['Планета', 'Созвездие', 'Оба одинаково маленькие'], answer: 'Планета', score: 2 },
+    const wordPairs = [
+        { left: "дом", right: "квартира", correct: "right" },
+        { left: "река", right: "океан", correct: "right" },
+        { left: "гора", right: "холм", correct: "left" },
+        { left: "книга", right: "журнал", correct: "left" },
+        { left: "автомобиль", right: "велосипед", correct: "left" },
+        { left: "самолет", right: "вертолет", correct: "left" },
+        { left: "город", right: "деревня", correct: "left" },
+        { left: "море", right: "озеро", correct: "left" },
+        { left: "лес", right: "парк", correct: "left" },
+        { left: "школа", right: "университет", correct: "right" }
+    ];
 
-    // Hard level tasks
-    { level: 'hard', question: 'Что быстрее: свет или звук?', options: ['Свет', 'Звук', 'Оба одинаково быстры', 'Зависит от условий'], answer: 'Свет', score: 3 },
-    { level: 'hard', question: 'Что тяжелее: воздух или вода?', options: ['Воздух', 'Вода', 'Оба одинаково тяжелы', 'Зависит от условий'], answer: 'Оба одинаково тяжелы', score: 3 },
-    { level: 'hard', question: 'Что выше: Эверест или Чомолунгма?', options: ['Эверест', 'Чомолунма', 'Оба одинаково высоки', 'Зависит от точки отсчета'], answer: 'Зависит от точки отсчета', score: 3 },
-    { level: 'hard', question: 'Что быстрее: скорость света или скорость звука?', options: ['Скорость света', 'Скорость звука', 'Оба одинаково быстры', 'Зависит от среды'], answer: 'Скорость света', score: 3 },
-    { level: 'hard', question: 'Что длиннее: Миссисипи или Амазонка?', options: ['Миссисипи', 'Амазонка', 'Оба одинаково длинные', 'Зависит от точки отсчета'], answer: 'Зависит от точки отсчета', score: 3 }
-];
-
-        let currentTaskIndex = 0;
-        let correctAnswers = 0;
-        let totalScore = 0;
-        let startTime, endTime, timeLimit, interval;
-
-        function startTest() {
-            document.querySelector('button[onclick="startTest()"]').classList.add('hidden');
-            showDifficultySelector();
+    function startCountdown() {
+        let time = document.getElementById('countdownInput').value;
+        if (!time || time <= 0) {
+            alert('Пожалуйста, введите время для теста.');
+            return;
         }
-
-        function showDifficultySelector() {
-            let selectorHTML = '<h2>Выберите уровень сложности:</h2>';
-            ['easy', 'medium', 'hard', 'random'].forEach(level => {
-                selectorHTML += `<button onclick="setDifficulty('${level}')">${level}</button>`;
-            });
-            document.getElementById('taskContainer').innerHTML = selectorHTML;
-            document.getElementById('taskContainer').classList.remove('hidden');
-        }
-
-        function setDifficulty(level) {
-            selectedTasks = level === 'random' ? tasks.sort(() => 0.5 - Math.random()) : tasks.filter(task => task.level === level);
-            let timeOptions = level === 'easy' ? [30, 45, 60] : level === 'medium' ? [60, 90, 120] : [120, 150, 180];
-            showTimeOptions(timeOptions);
-        }
-
-        function showTimeOptions(timeOptions) {
-            let timeSelectorHTML = '<h2>Выберите время на выполнение теста:</h2>';
-            timeOptions.forEach(time => {
-                timeSelectorHTML += `<button onclick="setTimeLimit(${time})">${time} секунд</button>`;
-            });
-            document.getElementById('taskContainer').innerHTML = timeSelectorHTML;
-        }
-
-        function setTimeLimit(seconds) {
-            timeLimit = seconds;
-            startTasks();
-        }
-
-        function startTasks() {
-            document.getElementById('testTitle').classList.add('hidden');
-            document.getElementById('testDescription').classList.add('hidden');
-            startTime = new Date();
-            endTime = new Date(startTime.getTime() + timeLimit * 1000);
-            document.getElementById('taskContainer').classList.add('hidden');
-            document.getElementById('correctAnswersContainer').classList.remove('hidden');
-            document.getElementById('resultContainer').classList.remove('hidden');
-            document.querySelector('button[onclick="cancelTest()"]').classList.remove('hidden');
-            startTimer();
-            loadTask();
-        }
-
-        function startTimer() {
-            interval = setInterval(() => {
-                const now = new Date();
-                const remaining = Math.round((endTime - now) / 1000);
-                document.getElementById('timerContainer').innerHTML = `Осталось времени: ${remaining} секунд`;
-                document.getElementById('timerContainer').classList.remove('hidden');
-                if (remaining <= 0) {
-                    clearInterval(interval);
-                    endTest();
-                }
-            }, 1000);
-        }
-
-        function loadTask() {
-            if (currentTaskIndex < selectedTasks.length) {
-                const task = selectedTasks[currentTaskIndex];
-                const optionsHtml = task.options.map(option => `<button onclick="submitAnswer('${option}', '${task.answer}', '${task.score}')">${option}</button>`).join('');
-                document.getElementById('taskContainer').innerHTML = `<h2>${task.question}</h2>${optionsHtml}`;
-                document.getElementById('taskContainer').classList.remove('hidden');
-            } else {
-                endTest();
+        countdown = 3;
+        modal.style.display = 'none';
+        testContainer.style.display = 'block';
+        gameStarted = false;
+        let countdownInterval = setInterval(() => {
+            bigLetter.textContent = countdown;
+            countdown--;
+            if (countdown < 0) {
+                clearInterval(countdownInterval);
+                bigLetter.textContent = 'Начали!';
+                setTimeout(() => {
+                    startGame(time);
+                }, 1000);
             }
+        }, 1000);
+    }
+
+    function startGame(time) {
+        countdown = time;
+        gameStarted = true;
+        interval = setInterval(function() {
+            countdown--;
+            countdownDisplay.textContent = 'Осталось ' + countdown + ' секунд';
+            if (countdown <= 0) {
+                clearInterval(interval);
+                displayFinalResult();
+            }
+        }, 1000);
+        changeWordPair();
+    }
+
+    function changeWordPair() {
+        if (countdown <= 0) {
+            return;
         }
 
-        function submitAnswer(userAnswer, correctAnswer, score) {
-    document.getElementById('taskContainer').classList.add('hidden');
-    if (userAnswer === correctAnswer) {
-        correctAnswers++;
-        totalScore += parseInt(score); // Ensure 'score' is treated as a number
-        document.getElementById('correctAnswersContainer').innerHTML = `Правильных ответов: ${correctAnswers}`;
-        document.getElementById('resultContainer').innerHTML = 'Правильно!';
-        currentTaskIndex++;
-        if (currentTaskIndex < selectedTasks.length) {
-            loadTask();
-        } else {
-            endTest();
+        currentPair = Math.floor(Math.random() * wordPairs.length);
+        let pair = wordPairs[currentPair];
+        bigLetter.textContent = pair.left + " - " + pair.right;
+        feedback.textContent = '';
+        responseReceived = false;
+
+        setTimeout(changeWordPair, 3000);
+    }
+
+    function chooseWord(side) {
+        if (!gameStarted || responseReceived || countdown <= 0) {
+            return;
         }
-    } else {
-        document.getElementById('resultContainer').innerHTML = 'Неправильно! Следующий вопрос...';
-        currentTaskIndex++;
-        if (currentTaskIndex < selectedTasks.length) {
-            setTimeout(loadTask, 1000);
+        responseReceived = true;
+        
+        let pair = wordPairs[currentPair];
+        if (side === pair.correct) {
+            correctStreak++;
+            showFeedback(true);
         } else {
-            endTest();
+            showFeedback(false);
+        }
+
+        turns++;
+        correctStreakDisplay.textContent = 'Всего правильных ответов: ' + correctStreak;
+        turnDisplay.textContent = 'Количество отвеченных вопросов: ' + turns;
+    }
+
+    function showFeedback(isCorrect) {
+        if (isCorrect) {
+            feedback.textContent = 'Правильно';
+            feedback.style.color = '#00FF00';
+        } else {
+            feedback.textContent = 'Неправильно';
+            feedback.style.color = '#FF0000';
         }
     }
-}
-function saveResult(finalScore) {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "", true);  // POST запрос на тот же URL
+
+    function displayFinalResult() {
+        let score = (correctStreak / turns) || 0;
+        if (score === 0) {
+            resultDisplay.innerHTML = 'Вы не прошли тест';
+        } else {
+            resultDisplay.innerHTML = `Всего правильных ответов: ${correctStreak}<br>Процент правильных ответов: ${(score * 100).toFixed(2)}%`;
+            saveResult(score);
+        }
+
+        boxContainer.style.display = 'none';
+        boxNoticeContainer.style.display = 'none';
+        buttonContainer.style.display = 'none';
+        
+        setTimeout(() => {
+            modal.style.display = 'flex';
+            resetTest();
+        }, 10000);
+    }
+
+    function saveResult(score) {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "", true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onload = function () {
+        xhr.onload = function() {
         if (this.status >= 200 && this.status < 300) {
             console.log('Result saved successfully:', this.responseText);
         } else {
             console.log('Failed to save result:', this.statusText);
         }
     };
-    xhr.onerror = function () {
+        xhr.onerror = function() {
         console.log('Network error.');
     };
-    xhr.send("finalScore=" + encodeURIComponent(finalScore));
-}
-
-function endTest() {
-    clearInterval(interval);
-    const now = new Date();
-    const timeTaken = (now - startTime) / 1000; // Время в секундах
-    const finalScore = totalScore / timeTaken; // Рассчитываем итоговый результат, учитывая сумму баллов
-
-    document.getElementById('taskContainer').innerHTML = `<h2>Тест завершен</h2>
-        <p>Ваш итоговый результат: ${finalScore.toFixed(2)} баллов в секунду.</p>
-        <p>Затраченное время: ${timeTaken} секунд.</p>`;
-    document.getElementById('taskContainer').classList.remove('hidden');
-    document.getElementById('correctAnswersContainer').classList.add('hidden');
-    document.getElementById('timerContainer').classList.add('hidden');
-    document.getElementById('resultContainer').classList.add('hidden');
-    document.getElementById('statusMessage').classList.add('hidden');
-    document.querySelector('button[onclick="cancelTest()"]').classList.add('hidden');
-    document.querySelector('button[onclick="startTest()"]').classList.remove('hidden');
-
-    // Проверяем, есть ли набранные баллы перед сохранением результатов
-    if (totalScore > 0) {
-        saveResult(finalScore);
-    } else {
-        console.log('No points scored. Result not saved.');
+        xhr.send("score=" + score);
     }
-}
-// Защита от копирования, скриншотов и смены вкладок
-document.addEventListener('copy', (e) => e.preventDefault());
-document.addEventListener('cut', (e) => e.preventDefault());
-document.addEventListener('paste', (e) => e.preventDefault());
 
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-        cancelTest();
+    function resetTest() {
+        correctStreak = 0;
+        turns = 0;
+        correctStreakDisplay.textContent = 'Всего правильных ответов: 0';
+        turnDisplay.textContent = 'Количество отвеченных вопросов: 0';
+        bigLetter.textContent = 'Загрузка...';
+        resultDisplay.innerHTML = '';
+        boxContainer.style.display = 'block';
+        boxNoticeContainer.style.display = 'block';
+        buttonContainer.style.display = 'flex';
+        document.getElementById('countdownInput').value = '';
+        testContainer.style.display = 'none';
+        modal.style.display = 'flex';
     }
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'PrintScreen') {
-        e.preventDefault();
-        alert('Скриншоты отключены.');
-    }
-});
-
-window.addEventListener('blur', () => {
-    alert('Не меняйте вкладки во время теста.');
-    cancelTest();
-});
 
 function cancelTest() {
         clearInterval(interval);
-        document.getElementById('testTitle').classList.remove('hidden');
-        document.getElementById('testDescription').classList.remove('hidden');
-        document.getElementById('taskContainer').classList.add('hidden');
-        document.getElementById('correctAnswersContainer').classList.add('hidden');
-        document.getElementById('timerContainer').classList.add('hidden');
-        document.getElementById('resultContainer').classList.add('hidden');
-        document.getElementById('statusMessage').classList.add('hidden');
-        document.querySelector('button[onclick="cancelTest()"]').classList.add('hidden');
-        document.querySelector('button[onclick="startTest()"]').classList.remove('hidden');
-        document.getElementById('statusMessage').innerHTML = 'Тест отменен.';
-        document.getElementById('statusMessage').classList.remove('hidden');
+        resetTest();
+    }
 
-}
+    function goBack() {
+        window.location.href = "tests.php";
+    }
+
+    function program() {
+        modal.style.display = 'flex';
+        testContainer.style.display = 'none';
+    }
+
+    program();
     </script>
+
 </body>
 </html>
+<?php $conn->close(); ?>

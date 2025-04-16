@@ -15,26 +15,26 @@ $stats_query = "SELECT
                 (SELECT COUNT(*) FROM tests) as total_tests,
                 (SELECT COUNT(*) FROM test_results) as total_results,
                 (SELECT COUNT(*) FROM ratings) as total_ratings";
-$stats_result = $mysqli->query($stats_query);
+$stats_result = $conn->query($stats_query);
 $stats = $stats_result->fetch_assoc();
 
 // Получаем последние результаты тестов
-$recent_results_query = "SELECT tr.*, t.title as test_title, u.username 
+$recent_results_query = "SELECT tr.*, t.test_name as test_title, u.username 
                         FROM test_results tr 
                         JOIN tests t ON tr.test_id = t.id 
                         JOIN users u ON tr.user_id = u.id 
-                        ORDER BY tr.date_taken DESC 
+                        ORDER BY tr.test_date DESC 
                         LIMIT 5";
-$recent_results = $mysqli->query($recent_results_query);
+$recent_results = $conn->query($recent_results_query);
 
 // Получаем последние оценки профессий
 $recent_ratings_query = "SELECT r.*, p.name as profession_name, u.username 
                         FROM ratings r 
                         JOIN professions p ON r.profession_id = p.id 
                         JOIN users u ON r.user_id = u.id 
-                        ORDER BY r.date_rated DESC 
+                        ORDER BY r.id DESC 
                         LIMIT 5";
-$recent_ratings = $mysqli->query($recent_ratings_query);
+$recent_ratings = $conn->query($recent_ratings_query);
 ?>
 
 <!DOCTYPE html>
@@ -43,28 +43,13 @@ $recent_ratings = $mysqli->query($recent_ratings_query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель управления - ProfHub</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/background.css">
+    <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="index.php" class="logo">
-                    <i class="fas fa-brain"></i>
-                    <span>ProfHub</span>
-                </a>
-                <nav class="nav-menu">
-                    <a href="index.php">Главная</a>
-                    <a href="professions.php">Профессии</a>
-                    <a href="tests.php">Тесты</a>
-                    <a href="profile.php">Личный кабинет</a>
-                    <a href="admin.php" class="active">Панель управления</a>
-                    <a href="logout.php" class="btn btn-outline">Выйти</a>
-                </nav>
-            </div>
-        </div>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main class="main">
         <div class="container">
@@ -134,14 +119,20 @@ $recent_ratings = $mysqli->query($recent_ratings_query);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($result = $recent_results->fetch_assoc()): ?>
+                                    <?php if ($recent_results && $recent_results->num_rows > 0): ?>
+                                        <?php while ($result = $recent_results->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($result['username']); ?></td>
+                                                <td><?php echo htmlspecialchars($result['test_title']); ?></td>
+                                                <td><?php echo $result['result']; ?>%</td>
+                                                <td><?php echo date('d.m.Y', strtotime($result['test_date'])); ?></td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($result['username']); ?></td>
-                                            <td><?php echo htmlspecialchars($result['test_title']); ?></td>
-                                            <td><?php echo $result['score']; ?>%</td>
-                                            <td><?php echo date('d.m.Y', strtotime($result['date_taken'])); ?></td>
+                                            <td colspan="4" class="text-center">Нет результатов тестов</td>
                                         </tr>
-                                    <?php endwhile; ?>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -160,18 +151,24 @@ $recent_ratings = $mysqli->query($recent_ratings_query);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($rating = $recent_ratings->fetch_assoc()): ?>
+                                    <?php if ($recent_ratings && $recent_ratings->num_rows > 0): ?>
+                                        <?php while ($rating = $recent_ratings->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($rating['username']); ?></td>
+                                                <td><?php echo htmlspecialchars($rating['profession_name']); ?></td>
+                                                <td>
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <i class="fas fa-star <?php echo $i <= $rating['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
+                                                    <?php endfor; ?>
+                                                </td>
+                                                <td><?php echo date('d.m.Y', strtotime($rating['id'])); ?></td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($rating['username']); ?></td>
-                                            <td><?php echo htmlspecialchars($rating['profession_name']); ?></td>
-                                            <td>
-                                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                    <i class="fas fa-star <?php echo $i <= $rating['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
-                                                <?php endfor; ?>
-                                            </td>
-                                            <td><?php echo date('d.m.Y', strtotime($rating['date_rated'])); ?></td>
+                                            <td colspan="4" class="text-center">Нет оценок профессий</td>
                                         </tr>
-                                    <?php endwhile; ?>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>

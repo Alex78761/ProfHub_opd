@@ -1,52 +1,43 @@
 <?php
 session_start();
+require '../db-connect.php';
 
-// Подключение к базе данных
-require_once "../db_connect.php";
+if (!isset($_SESSION['user_id'])) {
+    die("Ошибка: пользователь не авторизован");
+}
 
-// Проверяем, была ли отправлена форма для сохранения результатов теста
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['res'])) {
-    // Получаем среднее время реакций из POST-данных
-    $avgReactionTime = $_POST['res'];
+if (!isset($_POST['res'])) {
+    die("Ошибка: результат не получен");
+}
 
-    // Проверяем, авторизован ли пользователь
-    if (isset($_SESSION['user_id'])) {
-        // Получаем user_id из сессии
-        $user_id = $_SESSION['user_id'];
+$userId = $_SESSION['user_id'];
+$result = floatval($_POST['res']);
 
-        // Устанавливаем test_type и test_name
-        $test_type = "Оценка простой реакции человека на движущийся объект";
-        $test_name = "реакция на движение";
+// Получаем ID теста
+$stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+$testType = "Оценка простой реакции человека на движущийся объект";
+$testName = "реакция на движение";
+$stmt->bind_param("ss", $testType, $testName);
+$stmt->execute();
+$testResult = $stmt->get_result();
 
-        // Получаем test_id по test_type и test_name из таблицы tests
-        $stmt_test_id = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
-        $stmt_test_id->bind_param("ss", $test_type, $test_name);
-        $stmt_test_id->execute();
-        $result_test_id = $stmt_test_id->get_result();
-
-        if ($result_test_id->num_rows == 1) {
-            $row_test_id = $result_test_id->fetch_assoc();
-            $test_id = $row_test_id['id'];
-
-            // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-            $stmt->bind_param("idd", $user_id, $test_id, $avgReactionTime); // 'idd' представляет собой типы данных: integer, integer, double/float
-            if ($stmt->execute()) {
-                echo "Результаты успешно сохранены";
-            } else {
-                echo "Ошибка при сохранении результатов: " . $mysqli->error;
-            }
-            $stmt->close(); // Закрытие подготовленного запроса
-        } else {
-            echo "Ошибка при получении идентификатора теста";
-        }
-        $stmt_test_id->close(); // Закрытие подготовленного запроса для получения test_id
+if ($testResult->num_rows > 0) {
+    $row = $testResult->fetch_assoc();
+    $testId = $row['id'];
+    
+    // Сохраняем результат
+    $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("iisd", $userId, $testId, $testName, $result);
+    
+    if ($stmt->execute()) {
+        echo "Результат успешно сохранен";
     } else {
-        // Пользователь не авторизован, сохраняем данные в сессию
-        $_SESSION['guest_avg_reaction_time_analog'] = $avgReactionTime;
-        echo "Результаты успешно сохранены в сессии";
+        echo "Ошибка при сохранении результата: " . $conn->error;
     }
 } else {
-    echo "Нет данных о реакционном времени";
+    echo "Ошибка: тест не найден";
 }
+
+$stmt->close();
+$conn->close();
 ?>

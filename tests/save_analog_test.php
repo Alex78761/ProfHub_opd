@@ -5,9 +5,9 @@ session_start();
 require_once "../db_connect.php";
 
 // Проверяем, была ли отправлена форма для сохранения результатов теста
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['averageReactionTime'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['res'])) {
     // Получаем среднее время реакций из POST-данных
-    $avgReactionTime = $_POST['averageReactionTime'];
+    $avgReactionTime = $_POST['res'];
 
     // Проверяем, авторизован ли пользователь
     if (isset($_SESSION['user_id'])) {
@@ -29,18 +29,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['averageReactionTime'])
             $test_id = $row_test_id['id'];
 
             // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-            $stmt->bind_param("idd", $user_id, $test_id, $avgReactionTime); // 'idd' представляет собой типы данных: integer, integer, double/float
+            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iisd", $user_id, $test_id, $test_name, $avgReactionTime);
             if ($stmt->execute()) {
                 echo "Результаты успешно сохранены";
             } else {
                 echo "Ошибка при сохранении результатов: " . $mysqli->error;
             }
-            $stmt->close(); // Закрытие подготовленного запроса
+            $stmt->close();
         } else {
             echo "Ошибка при получении идентификатора теста";
         }
-        $stmt_test_id->close(); // Закрытие подготовленного запроса для получения test_id
+        $stmt_test_id->close();
     } else {
         // Пользователь не авторизован, сохраняем данные в сессию
         $_SESSION['guest_avg_reaction_time_analog'] = $avgReactionTime;

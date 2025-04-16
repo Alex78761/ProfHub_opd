@@ -5,177 +5,171 @@ const prevReactionTimeDisplay = document.getElementById('prevReactionTimeDisplay
 const avgReactionTimeDisplay = document.getElementById('avgReactionTimeDisplay');
 const changeCounterDisplay = document.getElementById('changeCounterDisplay');
 const resultText = document.getElementById('resultText');
-const header = document.getElementById('header');
+const statsBlock = document.getElementById('statsBlock');
+const startButton = document.getElementById('startButton');
+const cancelButton = document.getElementById('cancelButton');
 
 let startTime, endTime, prevReactionTime;
 let reactionTimes = [];
-let changeCount = 0;
 let greenAppearances = 0;
-let interval;
-// Функция для установки зеленого цвета, записи времени начала реакции и установки обработчика клика
-
-// Глобальная переменная для хранения предыдущего времени реакции
-
-// Флаг для проверки первого нажатия на текущий зеленый квадрат
+let isTestActive = false;
 let greenClickHandled = false;
+let colorTimeout;
 
-// Глобальная функция для обработки клика
+// Функция для обработки клика
 function handleClick() {
+    if (!isTestActive || colorBox.style.backgroundColor !== 'green' || greenClickHandled) return;
+
     endTime = new Date();
-    const reactionTime = (endTime - startTime) / 1000; // Convert to seconds
-    timerDisplay.textContent = reactionTime.toFixed(2);
-
+    const reactionTime = (endTime - startTime) / 1000;
+    
+    // Обновляем отображение времени реакции
+    timerDisplay.textContent = reactionTime.toFixed(3);
+    
+    // Сохраняем время реакции и обновляем предыдущее время
     reactionTimes.push(reactionTime);
+    if (prevReactionTime !== undefined) {
+        prevReactionTimeDisplay.textContent = prevReactionTime.toFixed(3);
+    }
+    prevReactionTime = reactionTime;
 
-    // Обновляем значение prevReactionTime перед вызовом функции updatePrevReactionTime()
-    const prevReaction = prevReactionTime; // Сохраняем предыдущее время реакции в отдельной переменной
-    updatePrevReactionTime(reactionTime); // Обновляем значение предыдущего времени реакции перед вызовом handleClick()
-
-    // Calculate and display average reaction time
+    // Обновляем среднее время
     const avgReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
-    avgReactionTimeDisplay.textContent = avgReactionTime.toFixed(2);
+    avgReactionTimeDisplay.textContent = avgReactionTime.toFixed(3);
+
+    greenClickHandled = true;
+    colorBox.style.backgroundColor = 'black';
+    greenAppearances++;
+    updateChangeCounter();
+    
+    if (greenAppearances < 10) {
+        setTimeout(alternateColors, 1000);
+    } else {
+        finishTest();
+    }
 }
 
-// Функция для установки зеленого цвета, записи времени начала реакции и установки обработчика клика
+// Функция для установки зеленого цвета
 function setGreenColor() {
+    if (!isTestActive) return;
+
     colorBox.style.backgroundColor = 'green';
-    startTime = new Date(); // Записываем время начала реакции
-    greenClickHandled = false; // Сбрасываем флаг
+    startTime = new Date();
+    greenClickHandled = false;
 
-    // Генерируем случайную задержку от 3 до 5 секунд перед следующим зеленым цветом
-    const delay = Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
-    setTimeout(() => {
-        colorBox.style.backgroundColor = 'black'; // Возвращаем цвет квадрата на черный
+    // Генерируем случайную задержку от 2 до 5 секунд
+    const delay = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+    
+    colorTimeout = setTimeout(() => {
+        if (!isTestActive) return;
+        
+        colorBox.style.backgroundColor = 'black';
         greenAppearances++;
-        updateChangeCounter(); // Обновляем счетчик появлений зеленого цвета
+        updateChangeCounter();
+        
         if (greenAppearances < 10) {
-            setTimeout(alternateColors, 1000); // Устанавливаем задержку перед вызовом alternateColors()
+            setTimeout(alternateColors, 1000);
         } else {
-            const avgReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
-            saveReactionTime(avgReactionTime); // Отправить только среднее время реакции на сервер
-            resultText.innerHTML = '<br><br>Результат теста: ' + avgReactionTime.toFixed(2); // Отображаем результат теста
-            resetTest(); // Сброс теста
+            finishTest();
         }
-    }, delay); // Устанавливаем случайную задержку
-
-    // Устанавливаем обработчик клика только на зеленом квадрате
-    colorBox.onclick = function() {
-        // Проверяем, что квадрат зеленый и флаг еще не был установлен
-        if (colorBox.style.backgroundColor === 'green' && !greenClickHandled) {
-            handleClick(); // Вызываем функцию обработки клика
-            greenClickHandled = true; // Устанавливаем флаг
-        }
-    };
+    }, delay);
 }
 
 // Функция для чередования цветов
 function alternateColors() {
+    if (!isTestActive) return;
+
     if (greenAppearances < 10) {
-        setTimeout(() => {
-            if (colorBox.style.backgroundColor === 'green') {
-                colorBox.style.backgroundColor = 'black'; // Возвращаем цвет квадрата на черный
-                greenAppearances++;
-                updateChangeCounter(); // Обновляем счетчик появлений зеленого цвета
-                setGreenColor(); // Устанавливаем зеленый цвет
-            } else {
-                setGreenColor(); // Если цвет не зеленый, устанавливаем его заново
-            }
-            // handleClick() // Не нужно вызывать handleClick() здесь
-        }, 1000); // Ждем 1 секунду перед возвратом к черному цвету
+        setGreenColor();
     } else {
-        const avgReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
-        saveReactionTime(avgReactionTime); // Отправить только среднее время реакции на сервер
-        resultText.innerHTML = '<br><br>Результат теста: ' + avgReactionTime.toFixed(2); // Отображаем результат теста
-        resetTest(); // Сброс теста
+        finishTest();
     }
 }
 
-
-// Функция для обновления счетчика изменений
+// Функция для обновления счетчика
 function updateChangeCounter() {
-    changeCounterDisplay.textContent = 10 - greenAppearances; // Обновляем значение счетчика
+    changeCounterDisplay.textContent = 10 - greenAppearances;
 }
-
-
-// Глобальная функция для обновления предыдущего времени реакции
-function updatePrevReactionTime(reactionTime) {
-    // Предыдущее время реакции обновляется только в случае, если уже есть какое-то значение предыдущего времени
-    if (prevReactionTime !== undefined) {
-        prevReactionTimeDisplay.textContent = prevReactionTime.toFixed(2); // Отображаем его на странице
-    }
-    prevReactionTime = reactionTime; // Обновляем значение предыдущего времени реакции
-}
-
 
 // Функция для начала теста
 function startTest() {
-    document.getElementById('startButton').style.display = 'none';
-    document.getElementById('test-heading').style.display = 'none';
-    document.getElementById('header').style.display = 'none';
-
+    isTestActive = true;
+    reactionTimes = [];
+    greenAppearances = 0;
+    prevReactionTime = undefined;
+    
+    // Обновляем UI
+    startButton.style.display = 'none';
     instruction.style.display = 'block';
     colorBox.style.display = 'block';
-    timerDisplay.parentElement.style.display = 'block'; // Показать элемент таймера
-    prevReactionTimeDisplay.parentElement.style.display = 'block'; // Показать элемент предыдущего времени реакции
-    avgReactionTimeDisplay.parentElement.style.display = 'block'; // Показать элемент среднего времени реакции
-    changeCounterDisplay.parentElement.style.display = 'block'; // Показать элемент счетчика изменений
-
-    // Устанавливаем обработчик клика на кнопку "Cancel"
-    document.getElementById('cancelButton').addEventListener('click', cancelTest);
-
-    // Отображаем кнопку "Cancel"
-    document.getElementById('cancelButton').style.display = 'inline-block';
-
-    // Начинаем чередование цветов
+    statsBlock.style.display = 'block';
+    cancelButton.style.display = 'inline-block';
+    resultText.textContent = '';
+    
+    // Добавляем обработчик клика
+    colorBox.addEventListener('click', handleClick);
+    
+    // Начинаем тест
+    updateChangeCounter();
     alternateColors();
-
-    // Запускаем интервал и сохраняем его в переменной interval
-    interval = setInterval(() => {
-        // Отображаем предыдущее время реакции, если оно есть
-        if (prevReactionTime !== undefined) {
-            prevReactionTimeDisplay.textContent = prevReactionTime.toFixed(2);
-        }
-    }, 100); // Периодичность обновления - каждые 100 миллисекунд
 }
 
-// Функция для отмены теста
+// Функция для завершения теста
+function finishTest() {
+    isTestActive = false;
+    clearTimeout(colorTimeout);
+    
+    const avgReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+    
+    // Сохраняем результат
+    saveReactionTime(avgReactionTime);
+    
+    // Обновляем UI
+    colorBox.style.backgroundColor = 'black';
+    colorBox.style.display = 'none';
+    instruction.style.display = 'none';
+    cancelButton.style.display = 'none';
+    startButton.style.display = 'block';
+    
+    // Отображаем результат
+    resultText.innerHTML = `
+        <h3>Тест завершен!</h3>
+        <p>Ваше среднее время реакции: ${avgReactionTime.toFixed(3)} сек.</p>
+        <p>Лучшее время: ${Math.min(...reactionTimes).toFixed(3)} сек.</p>
+        <p>Худшее время: ${Math.max(...reactionTimes).toFixed(3)} сек.</p>
+    `;
+    
+    // Удаляем обработчик клика
+    colorBox.removeEventListener('click', handleClick);
+}
+
 // Функция для отмены теста
 function cancelTest() {
-    clearInterval(interval); // Остановить интервал
-    reactionTimes = []; // Очистить массив времен реакции
-    resetTest(); // Сброс теста
+    isTestActive = false;
+    clearTimeout(colorTimeout);
+    
+    // Обновляем UI
+    colorBox.style.backgroundColor = 'black';
+    colorBox.style.display = 'none';
+    instruction.style.display = 'none';
+    statsBlock.style.display = 'none';
+    cancelButton.style.display = 'none';
+    startButton.style.display = 'block';
+    resultText.textContent = 'Тест был прерван';
+    
+    // Удаляем обработчик клика
+    colorBox.removeEventListener('click', handleClick);
 }
 
-// Функция для сброса теста
-function resetTest() {
-    document.getElementById('startButton').style.display = 'block';
-    document.getElementById('startButton').style.margin = 'auto'; // Центрировать кнопку
-    document.getElementById('cancelButton').style.display = 'none';
-    document.getElementById('test-heading').style.display = 'block';
-    document.getElementById('header').style.display = 'block';
-    instruction.style.display = 'none';
-    colorBox.style.display = 'none';
-    timerDisplay.parentElement.style.display = 'none'; // Скрыть элемент таймера
-    prevReactionTimeDisplay.parentElement.style.display = 'none'; // Скрыть элемент предыдущего времени реакции
-    avgReactionTimeDisplay.parentElement.style.display = 'none'; // Скрыть элемент среднего времени реакции
-    changeCounterDisplay.parentElement.style.display = 'none'; // Скрыть элемент счетчика изменений
-    resultText.style.display = 'block';
-    resultText.classList.add('result-text'); // Применить стили к элементу результата теста
-    reactionTimes = [];
-    changeCount = 0;
-    greenAppearances = 0; // Сброс счетчика появлений зеленого цвета
-    timerDisplay.textContent = '0';
-    avgReactionTimeDisplay.textContent = '-';
-    changeCounterDisplay.textContent = '10';
-}
-// Функция для сохранения времени реакции
+// Функция для сохранения результата
 function saveReactionTime(avgReactionTime) {
     const formData = new FormData();
-    formData.append('avgReactionTime', avgReactionTime); // Отправляем только среднее время реакции
+    formData.append('avgReactionTime', avgReactionTime);
 
-    fetch('save_simple_color_test.php', {
+    fetch('../tests/save_simple_color_test.php', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(response => {
         if (!response.ok) {
@@ -184,10 +178,15 @@ function saveReactionTime(avgReactionTime) {
         return response.text();
     })
     .then(data => {
-        console.log(data); // Журнал ответа сервера
+        console.log('Результат сохранен:', data);
     })
     .catch(error => {
-        console.error('Проблема с операцией fetch:', error);
+        console.error('Ошибка при сохранении результата:', error);
+        resultText.innerHTML += '<p style="color: #ff6b6b;">Ошибка при сохранении результата</p>';
     });
 }
+
+// Добавляем обработчики событий
+startButton.addEventListener('click', startTest);
+cancelButton.addEventListener('click', cancelTest);
 

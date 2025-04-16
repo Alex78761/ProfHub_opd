@@ -45,7 +45,8 @@ $result_professions = $mysqli->query($query_professions);
                                   WHERE ratings.profession_id = $profession_id
                                   AND ratings.user_id IN (SELECT user_id FROM users WHERE role = 'expert')
                                   GROUP BY pvk.id
-                                  HAVING avg_rating IS NOT NULL";
+                                  HAVING avg_rating IS NOT NULL
+                                  ORDER BY ratings.created_at DESC";
             $result_expert_avg_ratings = $mysqli->query($query_expert_avg_ratings);
 
             // Выводим среднюю оценку для каждой ПВК от экспертов в виде полосы прогресса

@@ -1,12 +1,12 @@
 <?php
 session_start();
-require '../db-connect.php';
+require '../db_connect.php';
 
 // Проверка и обработка AJAX запроса
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['finalScore'])) {
     $userId = $_SESSION['user_id'] ?? null;
     if ($userId === null) {
-        echo "Ошибка: идентификатор пользователя не установлен.";
+        echo json_encode(["status" => "error", "message" => "Ошибка: идентификатор пользователя не установлен."]);
         exit;
     }
     $finalScore = floatval($_POST['finalScore']);  // Получаем и конвертируем finalScore из строки в число
@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['finalScore'])) {
 }
 
 function getTestId($testType, $testName) {
-    require '../db-connect.php';
-    $stmt = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
     if ($stmt === false) {
-        die("Ошибка подготовки запроса: " . $mysqli->error);
+        die("Ошибка подготовки запроса: " . $conn->error);
     }
     $stmt->bind_param("ss", $testType, $testName);
     $stmt->execute();
@@ -29,32 +29,31 @@ function getTestId($testType, $testName) {
         return $row['id'];
     } else {
         $stmt->close();
-        return null; // Вернуть null, если не найдено совпадений
+        return null;
     }
 }
 
 function saveResult($userId, $finalScore) {
-    require '../db-connect.php';
+    global $conn;
     $testType = "Оценка мышления";
     $testName = "анализ";
     
     $testId = getTestId($testType, $testName);
     if ($testId !== null) {
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
         if ($stmt === false) {
-            die("Ошибка подготовки запроса: " . $mysqli->error);
+            die("Ошибка подготовки запроса: " . $conn->error);
         }
-        $stmt->bind_param("iid", $userId, $testId, $finalScore);
+        $stmt->bind_param("iisd", $userId, $testId, $testName, $finalScore);
         if ($stmt->execute()) {
-            echo "Результат успешно сохранен.";
+            echo json_encode(["status" => "success", "message" => "Результат успешно сохранен."]);
         } else {
-            echo "Ошибка при сохранении результата: " . $stmt->error;
+            echo json_encode(["status" => "error", "message" => "Ошибка при сохранении результата: " . $stmt->error]);
         }
         $stmt->close();
     } else {
-        echo "Test ID не найден для '$testType', '$testName'";
+        echo json_encode(["status" => "error", "message" => "Test ID не найден для '$testType', '$testName'"]);
     }
-    $mysqli->close();
 }
 ?>
 <!DOCTYPE html>
@@ -227,13 +226,26 @@ function saveResult(finalScore) {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
-            console.log('Result saved successfully:', this.responseText);
+            try {
+                const response = JSON.parse(this.responseText);
+                console.log('Server response:', response);
+                if (response.status === 'success') {
+                    alert('Результат успешно сохранен!');
+                } else {
+                    alert('Ошибка при сохранении результата: ' + response.message);
+                }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                alert('Ошибка при обработке ответа сервера');
+            }
         } else {
-            console.log('Failed to save result:', this.statusText);
+            console.error('Server error:', this.status, this.statusText);
+            alert('Ошибка сервера при сохранении результата');
         }
     };
     xhr.onerror = function () {
-        console.log('Network error.');
+        console.error('Network error.');
+        alert('Ошибка сети при сохранении результата');
     };
     xhr.send("finalScore=" + encodeURIComponent(finalScore));
 }

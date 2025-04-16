@@ -8,7 +8,7 @@ $test_type = 'Оценка внимания'; // Specify the test type
 $test_name = 'объем'; // Specify the test name
 
 if ($user_id !== null && $accuracy !== null) {
-    $stmt = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
     $stmt->bind_param("ss", $test_type, $test_name);
     $stmt->execute();
     $stmt->bind_result($test_id);
@@ -16,14 +16,22 @@ if ($user_id !== null && $accuracy !== null) {
     $stmt->close();
 
     if ($test_id !== null) {
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
         $stmt->bind_param("iid", $user_id, $test_id, $accuracy);
-        $stmt->execute();
+        if ($stmt->execute()) {
+            echo '<div style="color:green;text-align:center;">Результат успешно сохранён!</div>';
+        } else {
+            echo '<div style="color:red;text-align:center;">Ошибка при сохранении результата: ' . $conn->error . '</div>';
+        }
         $stmt->close();
+    } else {
+        echo '<div style="color:red;text-align:center;">Не найден test_id для test_type=' . htmlspecialchars($test_type) . ' и test_name=' . htmlspecialchars($test_name) . '</div>';
     }
+} else if ($accuracy === null && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    echo '<div style="color:red;text-align:center;">Не передано значение accuracy!</div>';
 }
 
-$mysqli->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -294,11 +302,13 @@ $mysqli->close();
 
         // Send accuracy and user_id to PHP for saving
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "", true);
+        xhr.open("POST", "save_capacity_result.php", true);
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log(xhr.responseText);
+            if (xhr.readyState === 4) {
+                let resp = {};
+                try { resp = JSON.parse(xhr.responseText); } catch {}
+                accuracyResult.innerHTML += "<br><b style='color:" + (resp.success ? "green" : "red") + "'>" + (resp.message || xhr.responseText) + "</b>";
             }
         };
         xhr.send("accuracy=" + accuracy);

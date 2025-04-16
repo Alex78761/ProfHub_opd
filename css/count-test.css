@@ -22,12 +22,10 @@ body {
     transform: rotate(45deg);
 }
   .container {
-
-    max-width: 800px; /* Ширина контейнера */
-        background-color: rgba(0, 0, 0, 0.7); /* Чёрный цвет фона для контейнера с прозрачностью 50% */
-        padding: 20px; /* Добавляем отступы вокруг текста */
-        border-radius: 10px; /* Закругляем углы */
-        backdrop-filter: blur(10px);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
 }
   button {
     font-size: 18px;
@@ -95,7 +93,8 @@ body a:not(header a):hover::before {
 }
 #timer {
     font-size: 24px;
-    margin-top: 20px;
+    margin: 10px 0;
+    color: #333;
 }
 .button-container {
     display: flex;

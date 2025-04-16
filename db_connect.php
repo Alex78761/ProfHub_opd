@@ -2,7 +2,7 @@
 $host = 'localhost';
 $username = 'root';
 $password = '';
-$database = 'mukhinnnik';
+$database = 'pypynyaa';
 
 $conn = new mysqli($host, $username, $password, $database);
 

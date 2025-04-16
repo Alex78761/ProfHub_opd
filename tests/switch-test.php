@@ -1,34 +1,59 @@
 <?php
 session_start();
-include '../db-connect.php';
+require '../db-connect.php';
 
-if (isset($_SESSION['user_id']) && isset($_POST['score']) && $_POST['score'] > 0) {
-    $user_id = $_SESSION['user_id'];
-    $score = $_POST['score'];
+// Проверка и обработка AJAX запроса
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['score'])) {
+    $userId = $_SESSION['user_id'] ?? null;
+    if ($userId === null) {
+        echo "Ошибка: идентификатор пользователя не установлен.";
+        exit;
+    }
+    $score = floatval($_POST['score']);  // Получаем и конвертируем score из строки в число
+    saveResult($userId, $score);
+    exit;  // Завершаем скрипт после обработки AJAX запроса
+}
 
-    // Найти test_id
-    $test_name = "переключаемость"; 
-    $test_type = "Оценка внимания"; 
-
-    $query = "SELECT id FROM tests WHERE test_name = ? AND test_type = ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("ss", $test_name, $test_type);
+function getTestId($testType, $testName) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    if ($stmt === false) {
+        die("Ошибка подготовки запроса: " . $conn->error);
+    }
+    $stmt->bind_param("ss", $testType, $testName);
     $stmt->execute();
     $result = $stmt->get_result();
-    $test = $result->fetch_assoc();
-
-    if ($test) {
-        $test_id = $test['id'];
-
-        // Сохранить результат теста
-        $query = "INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)";
-        $stmt = $mysqli->prepare($query);
-        $stmt->bind_param("iid", $user_id, $test_id, $score);
-        $stmt->execute();
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        return $row['id'];
+    } else {
+        $stmt->close();
+        return null;
     }
+}
 
-    $stmt->close();
-    $mysqli->close();
+function saveResult($userId, $score) {
+    global $conn;
+    $testType = "Оценка внимания";
+    $testName = "переключаемость";
+    
+    $testId = getTestId($testType, $testName);
+    if ($testId !== null) {
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+        if ($stmt === false) {
+            die("Ошибка подготовки запроса: " . $conn->error);
+        }
+        $stmt->bind_param("iisd", $userId, $testId, $testName, $score);
+        if ($stmt->execute()) {
+            echo "Результат успешно сохранен.";
+        } else {
+            echo "Ошибка при сохранении результата: " . $conn->error;
+        }
+        $stmt->close();
+    } else {
+        echo "Ошибка: тест не найден в базе данных.";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -375,8 +400,18 @@ if (isset($_SESSION['user_id']) && isset($_POST['score']) && $_POST['score'] > 0
 
     function saveResult(score) {
         let xhr = new XMLHttpRequest();
-        xhr.open("POST", "switch-test.php", true);
+        xhr.open("POST", "", true);
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onload = function() {
+            if (this.status >= 200 && this.status < 300) {
+                console.log('Result saved successfully:', this.responseText);
+            } else {
+                console.log('Failed to save result:', this.statusText);
+            }
+        };
+        xhr.onerror = function() {
+            console.log('Network error.');
+        };
         xhr.send("score=" + score);
     }
 
@@ -423,4 +458,5 @@ if (isset($_SESSION['user_id']) && isset($_POST['score']) && $_POST['score'] > 0
 
 </body>
 </html>
+<?php $conn->close(); ?>
 

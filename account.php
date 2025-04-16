@@ -14,8 +14,11 @@ require_once "db-connect.php";
 
 // Получаем информацию о текущем пользователе из базы данных
 $user_id = $_SESSION['user_id'];
-$query = "SELECT * FROM users WHERE id = $user_id";
-$result = $mysqli->query($query);
+$query = "SELECT * FROM users WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows == 1) {
     $user = $result->fetch_assoc();

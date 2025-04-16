@@ -1,43 +1,155 @@
-header {
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 15px 20px;
-    text-align: right;
+/* Стили для видео-фона */
+.video-background {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    height: 100%;
+    z-index: -2;
+}
+
+.video-background video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+/* Стили для шапки */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(10px);
+    z-index: 1000;
+    padding: 0.5rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-header p {
-    color: white; /* Черный цвет текста */
-    font-size: 24px; /* Увеличенный размер шрифта */
-    margin: 0;
-    display: inline-block;
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-header nav {
-    display: inline-block; /* Чтобы nav не обтекал p */
-    margin-top: 5px; /* Небольшой отступ сверху */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
 }
 
-header a {
-    background-color: darkcyan;
-    color: white; /* Белый цвет текста */
-    text-decoration: none;
-    margin-right: 50px; /* Отступ справа для каждой ссылки */
-    font-size: 18px; /* Размер шрифта */
-    padding: 5px 10px; /* Отступы внутри кнопки */
-    border-radius: 5px; /* Скругленные углы */
-    transition: all 0.3s ease; /* Плавное изменение стилей при наведении */
+.nav-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-
-
-header a:hover {
-    background-color: transparent;
+/* Стили для кнопок */
+nav a {
     color: white;
-    border: 2px solid white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(145deg, rgb(40, 40, 40), rgb(20, 20, 20));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+nav a i {
+    font-size: 1rem;
+}
+
+nav a:hover {
+    background: linear-gradient(145deg, rgb(50, 50, 50), rgb(30, 30, 30));
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+nav a.active {
+    background: linear-gradient(145deg, #2196F3, #1976D2);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.logout-btn {
+    background: linear-gradient(145deg, #f44336, #d32f2f);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn:hover {
+    background: linear-gradient(145deg, #ef5350, #e53935);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Стили для бейджа непрочитанных сообщений */
+.message-badge {
+    background: #f44336;
+    color: white;
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 1024px) {
+    nav {
+        gap: 1rem;
+    }
+
+    nav a {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 0.5rem 0;
+    }
+
+    .header-container {
+        padding: 0 0.5rem;
+    }
+
+    nav {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-group {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    nav a {
+        width: calc(50% - 0.5rem);
+        justify-content: center;
+        text-align: center;
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    nav a {
+        width: 100%;
+    }
 }

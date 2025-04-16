@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['res'])) {
         $test_name = "реакция на множество движущихся объектов";
 
         // Получаем test_id по test_type и test_name из таблицы tests
-        $stmt_test_id = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+        $stmt_test_id = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
         $stmt_test_id->bind_param("ss", $test_type, $test_name);
         $stmt_test_id->execute();
         $result_test_id = $stmt_test_id->get_result();
@@ -29,18 +29,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['res'])) {
             $test_id = $row_test_id['id'];
 
             // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-            $stmt->bind_param("idd", $user_id, $test_id, $res); // 'idd' представляет собой типы данных: integer, integer, double/float
+            $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iisd", $user_id, $test_id, $test_name, $res);
             if ($stmt->execute()) {
                 echo "Результаты успешно сохранены";
             } else {
-                echo "Ошибка при сохранении результатов: " . $mysqli->error;
+                echo "Ошибка при сохранении результатов: " . $conn->error;
             }
-            $stmt->close(); // Закрытие подготовленного запроса
+            $stmt->close();
         } else {
             echo "Ошибка при получении идентификатора теста";
         }
-        $stmt_test_id->close(); // Закрытие подготовленного запроса для получения test_id
+        $stmt_test_id->close();
     } else {
         // Пользователь не авторизован, сохраняем данные в сессию
         $_SESSION['guest_avg_reaction_time_advmove'] = $res;

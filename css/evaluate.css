@@ -1,41 +1,1112 @@
 body {
-    font-family: 'Roboto', sans-serif;
-    color: white; /* Цвет текста */
+    background: #1a1a1a;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     margin: 0;
-    padding: 0;
-    display: flex; /* Используем flexbox */
-    justify-content: center; /* Выравниваем контейнер по центру по горизонтали */
-    align-items: center; /* Выравниваем контейнер по центру по вертикали */
-    min-height: 100vh; /* Задаем минимальную высоту, чтобы контейнер был по центру, даже если контента мало */
-    padding-top: 50px; /* Высота header */
-    
+    min-height: 100vh;
+    position: relative;
 }
-
 
 .container {
-    margin-top: 50px;
-    text-align: left;
-    max-width: 800px; /* Ширина контейнера */
-    background-color: rgba(0, 0, 0, 0.5); /* Чёрный цвет фона для контейнера с прозрачностью 50% */
-    padding: 20px; /* Добавляем отступы вокруг текста */
-    border-radius: 10px; /* Закругляем углы */
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
-h2 {
-    text-align: center; /* Выравнивание заголовка по центру */
-    color: white; /* Жёлтый цвет текста */
+h1 {
+    font-size: 3.5em;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-align: right;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-form {
-    text-align: left; /* Выравнивание текста в форме по центру */
-    margin-top: 20px; /* Отступ сверху */
+.profession-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
 }
 
-label {
+.profession-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.profession-name {
+    font-size: 1.8em;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.profession-description {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.criteria-group {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.criteria-group h3 {
+    color: #fff;
+    font-size: 1.4em;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.criteria-item {
+    margin-bottom: 25px;
+}
+
+.criteria-item:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-item label {
     display: block;
     margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
 }
 
+.criteria-item select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.criteria-item select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.criteria-item select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.comment-group {
+    margin-bottom: 30px;
+}
+
+.comment-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.comment-group textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.comment-group textarea:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.comment-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.no-professions {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+    }
+
+    .profession-card {
+        padding: 20px;
+    }
+
+    .criteria-group {
+        padding: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px 20px;
+    }
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+.review-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.rating-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating-item span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.review-comment {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.review-comment p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+    font-size: 1.4em;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.criteria-item {
+    margin-bottom: 25px;
+}
+
+.criteria-item:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-item label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.criteria-item select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.criteria-item select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.criteria-item select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.comment-group {
+    margin-bottom: 30px;
+}
+
+.comment-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.comment-group textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.comment-group textarea:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.comment-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.no-professions {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+    }
+
+    .profession-card {
+        padding: 20px;
+    }
+
+    .criteria-group {
+        padding: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px 20px;
+    }
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+.review-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.rating-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating-item span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.review-comment {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.review-comment p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    margin: 20px 0;
+}
+select,
+input[type="number"] {
+    padding: 10px; /* Внутренние отступы */
+    margin: 5px; /* Внешние отступы */
+    border: none; /* Убираем границы */
+    border-radius: 5px; /* Скругляем углы */
+    background-color: darkcyan;
+    color: white; /* Чёрный цвет текста */
+}
+
+input[type="submit"] {
+    padding: 10px 20px; /* Внутренние отступы по вертикали и горизонтали */
+    margin: 10px; /* Внешние отступы */
+    border: none; /* Убираем границы */
+    border-radius: 5px; /* Скругляем углы */
+    background-color: darkcyan;
+    color: white; /* Чёрный цвет текста */
+    cursor: pointer; /* Указатель мыши при наведении */
+    transition: all 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}
+    font-size: 1.4em;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.criteria-item {
+    margin-bottom: 25px;
+}
+
+.criteria-item:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-item label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.criteria-item select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.criteria-item select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.criteria-item select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.comment-group {
+    margin-bottom: 30px;
+}
+
+.comment-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.comment-group textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.comment-group textarea:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.comment-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.no-professions {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+    }
+
+    .profession-card {
+        padding: 20px;
+    }
+
+    .criteria-group {
+        padding: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px 20px;
+    }
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+.review-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.rating-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating-item span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.review-comment {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.review-comment p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+    font-size: 1.4em;
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.criteria-item {
+    margin-bottom: 25px;
+}
+
+.criteria-item:last-child {
+    margin-bottom: 0;
+}
+
+.criteria-item label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.criteria-item select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+
+.criteria-item select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.criteria-item select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.comment-group {
+    margin-bottom: 30px;
+}
+
+.comment-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.comment-group textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1em;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.comment-group textarea:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.comment-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.no-professions {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+    }
+
+    .profession-card {
+        padding: 20px;
+    }
+
+    .criteria-group {
+        padding: 20px;
+    }
+
+    .submit-btn {
+        padding: 12px 20px;
+    }
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1em;
+}
+
+.review-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.rating-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating-item span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.review-comment {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.review-comment p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    margin: 20px 0;
+}
 select,
 input[type="number"] {
     padding: 10px; /* Внутренние отступы */

@@ -8,15 +8,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Получение test_id по test_type и test_name
     $sql = "SELECT id FROM tests WHERE test_type = 'Оценка памяти' AND test_name = 'зрительная'";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $test_id = $row['id'];
+        $test_name = 'зрительная';
 
         // Сохранение результата в test_results
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $user_id, $test_id, $finalResult);
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iisd", $user_id, $test_id, $test_name, $finalResult);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Result saved successfully."]);
@@ -29,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(["status" => "error", "message" => "Test not found."]);
     }
 
-    $mysqli->close();
+    $conn->close();
+    exit;
 }
 ?>
 

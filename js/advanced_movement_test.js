@@ -1,13 +1,16 @@
 var startButton = document.getElementById("start");
 var buttonPressed = false;
-var tm
+var pressed = false;
+var pressed2 = false;
+var pressed3 = false;
+var tm;
+var tm2;
+var tm3;
 const minSpeed = 500; // минимальная скорость вращения
 const maxSpeed = 800; // максимальная скорость вращения
-var tm2
-var tm3
-var interval2
-var interval
-var interval3
+var interval2;
+var interval;
+var interval3;
 var results = [];
 let resultPost
 let test_id = 7
@@ -115,23 +118,30 @@ function endGame() {
 //----------------------------------------------------------------------------------
 
 function checkTime() {
-    setTimeout(function() {
-    if (!pressed) {
-        inaccuracy -= 30
-        rotatePoint()
-    } else { 
-        pressed = false
-        clearTimeout();
-    }
-}, tm);
+    var timeoutId = setTimeout(function() {
+        if (!pressed) {
+            inaccuracy -= 30;
+            rotatePoint();
+        } else {
+            pressed = false;
+        }
+    }, tm);
+    return timeoutId;
 }
 
 function rotatePoint() {
-    var speed = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed + inaccuracy;
+    var speed = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+    if (inaccuracy !== undefined) {
+        speed += inaccuracy;
+    }
     $("#circle").rotate(speed);
-    tm = (6000 / (speed - inaccuracy)) * 1000
-    inaccuracy += 360
-    checkTime()	
+    tm = (6000 / Math.max(speed - (inaccuracy || 0), minSpeed)) * 1000;
+    if (inaccuracy === undefined) {
+        inaccuracy = 0;
+    } else {
+        inaccuracy += 360;
+    }
+    checkTime();
 }
 
 
@@ -212,23 +222,30 @@ return $(this);
 
 
 function checkTime2() {
-    setTimeout(function() {
-    if (!pressed2) {
-        inaccuracy2 -= 30
-        rotatePoint2()
-    } else { 
-        pressed2 = false
-        clearTimeout();   
-    }
-}, tm2);
+    var timeoutId = setTimeout(function() {
+        if (!pressed2) {
+            inaccuracy2 -= 30;
+            rotatePoint2();
+        } else {
+            pressed2 = false;
+        }
+    }, tm2);
+    return timeoutId;
 }
 
 function rotatePoint2() {
-    var speed2 = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed + inaccuracy2;
+    var speed2 = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+    if (inaccuracy2 !== undefined) {
+        speed2 += inaccuracy2;
+    }
     $("#circle3").rotate2(speed2);
-    tm2 = (6000 / (speed2 - inaccuracy2)) * 1000
-    inaccuracy2 += 360
-    checkTime2()	
+    tm2 = (6000 / Math.max(speed2 - (inaccuracy2 || 0), minSpeed)) * 1000;
+    if (inaccuracy2 === undefined) {
+        inaccuracy2 = 180;
+    } else {
+        inaccuracy2 += 360;
+    }
+    checkTime2();
 }
 
 
@@ -303,23 +320,30 @@ function checkAnswer2(){
     
     
     function checkTime3() {
-        setTimeout(function() {
-        if (!pressed3) {
-            inaccuracy3 -= 30
-            rotatePoint3()
-        } else { 
-            pressed3 = false
-            clearTimeout();   
-        }
-    }, tm3);
+        var timeoutId = setTimeout(function() {
+            if (!pressed3) {
+                inaccuracy3 -= 30;
+                rotatePoint3();
+            } else {
+                pressed3 = false;
+            }
+        }, tm3);
+        return timeoutId;
     }
     
     function rotatePoint3() {
-        var speed3 = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed + inaccuracy3;
+        var speed3 = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+        if (inaccuracy3 !== undefined) {
+            speed3 += inaccuracy3;
+        }
         $("#circle5").rotate3(speed3);
-        tm3 = (6000 / (speed3 - inaccuracy3)) * 1000
-        inaccuracy3 += 360
-        checkTime3()	
+        tm3 = (6000 / Math.max(speed3 - (inaccuracy3 || 0), minSpeed)) * 1000;
+        if (inaccuracy3 === undefined) {
+            inaccuracy3 = 90;
+        } else {
+            inaccuracy3 += 360;
+        }
+        checkTime3();
     }
     
     
@@ -363,19 +387,21 @@ function checkAnswer2(){
 
 document.addEventListener("keydown", (event) => {
 if (event.code === "KeyS" && !buttonPressed) {
-pressed = false
-pressed2 = false
-pressed3 = false
-startButton.click();
-} else if (event.code === "KeyW" && buttonPressed) {
-    pressed = true
-    checkAnswer();
-} else if (event.code === "KeyD" && buttonPressed) {
-    pressed2 = true
-    checkAnswer2();
-} else if (event.code === "KeyA" && buttonPressed) {
-    pressed3 = true
-    checkAnswer3();
+    pressed = false;
+    pressed2 = false;
+    pressed3 = false;
+    startButton.click();
+} else if (buttonPressed) {
+    if (event.code === "KeyW") {
+        pressed = true;
+        checkAnswer();
+    } else if (event.code === "KeyD") {
+        pressed2 = true;
+        checkAnswer2();
+    } else if (event.code === "KeyA") {
+        pressed3 = true;
+        checkAnswer3();
+    }
 }
 });
 

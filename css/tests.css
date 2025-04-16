@@ -1,59 +1,379 @@
+/* Общие стили */
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
-    color: white; /* Жёлтый цвет текста */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
+    min-height: 100vh;
+    background-color: #1a1a1a;
+    color: white;
+    font-family: Arial, sans-serif;
 }
 
 .container {
-    background-color: rgba(0, 0, 0, 0.5); /* Чёрный цвет фона для контейнера с прозрачностью 50% */
-    padding: 20px; /* Добавляем отступы вокруг текста */
-    border-radius: 10px; /* Закругляем углы */
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
 }
 
 h1 {
     text-align: center;
-    color: white; /* Жёлтый цвет для заголовков */
-    margin-top: 20px; /* Отступ сверху */
+    font-size: 2.5rem;
+    margin: 0 0 30px;
+    color: #fff;
+    font-weight: normal;
 }
 
-ul {
-    list-style-type: none;
+/* Навигационные вкладки */
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 15px;
+    margin: 0 auto 30px;
     padding: 0;
+    max-width: 500px;
+    background: rgba(15, 15, 15, 0.95);
+    border-radius: 10px;
+    padding: 10px;
 }
 
-li {
-    margin-bottom: 10px;
-}
-
-body a:not(header a) {
-    color: white; /* Белый цвет текста */
-    text-decoration: none; /* Убираем стандартное подчеркивание */
-    position: relative; /* Позиционируем ссылку относительно своего контейнера */
-    overflow: hidden; /* Обрезаем лишний фон */
-}
-
-body a:not(header a)::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0; /* Начальная ширина линии */
-    height: 2px; /* Толщина линии */
-    background: white; /* Белый цвет линии */
-    transition: width 0.3s ease; /* Анимация изменения ширины */
-}
-
-body a:not(header a):hover::before {
-    width: 100%; /* Расширяем линию до 100% ширины при наведении */
-}
-
-p {
+.nav-tab {
+    flex: 1;
+    background: rgba(25, 25, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.2s ease;
     text-align: center;
-    margin-top: 20px; /* Отступ сверху */
+    padding: 12px 20px;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    white-space: nowrap;
+}
+
+.nav-tab:hover {
+    background: rgba(35, 35, 35, 0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.nav-tab.active {
+    background: rgba(45, 45, 45, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Секция тестов */
+.test-section {
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 12px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    color: #fff;
+    font-size: 1.2rem;
+    margin: 0 0 20px;
+    font-weight: normal;
+}
+
+/* Типы тестов */
+.test-type {
+    background: rgba(25, 25, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.test-type:hover {
+    background: rgba(35, 35, 35, 0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.test-type:after {
+    content: '▼';
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s ease;
+    margin-left: 10px;
+}
+
+.test-type.active {
+    background: rgba(35, 35, 35, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.test-type.active:after {
+    transform: rotate(180deg);
+}
+
+/* Список тестов */
+.test-names {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+}
+
+.test-names.show {
+    max-height: 1000px;
+    margin: 10px 0;
+}
+
+.test-names li {
+    margin: 8px 0;
+    padding: 0 10px;
+}
+
+.test-names a {
+    display: block;
+    padding: 12px 20px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.test-names a:hover {
+    background: rgba(40, 40, 40, 0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Сообщения */
+.message {
+    text-align: center;
+    padding: 20px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message a {
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    background: rgba(40, 40, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin-left: 15px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.message a:hover {
+    background: rgba(50, 50, 50, 0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Медиа-запросы */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+        margin: 40px auto;
+    }
+
+    .nav-tabs {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .nav-tab {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin: 0 0 30px;
+    }
+
+    .test-section {
+        padding: 20px;
+    }
+
+    .test-type {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .test-names li {
+        padding: 0;
+    }
+
+    .test-names a {
+        padding: 10px 15px;
+    }
+
+    .message {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .message a {
+        display: block;
+        margin: 10px auto 0;
+        max-width: 200px;
+    }
+}
+
+/* --- Современный стеклянный тёмный дизайн карточек тестов --- */
+.test-category {
+    margin-bottom: 3.5rem;
+    padding: 2.2rem 1.2rem 1.2rem 1.2rem;
+    border-radius: 24px;
+    background: rgba(18, 22, 30, 0.72);
+    box-shadow: 0 8px 32px 0 rgba(0,198,251,0.10), 0 2px 8px rgba(44,62,80,0.10);
+    border: 1.5px solid;
+    border-image: linear-gradient(90deg, #00c6fb 0%, #3498db 100%) 1;
+    position: relative;
+    backdrop-filter: blur(12px);
+}
+
+.category-title {
+    color: #00eaff;
+    font-size: 1.7rem;
+    font-weight: 800;
+    margin-bottom: 2.2rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2.5px solid #00c6fb;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px #00eaff, 0 2px 8px rgba(0,198,251,0.18);
+    text-align: left;
+}
+
+.tests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 0.5rem;
+    overflow: visible;
+    align-items: stretch;
+}
+
+.test-card {
+    min-width: 0;
+    min-height: 140px;
+    box-sizing: border-box;
+    padding: 1.1rem 0.8rem 0.8rem 0.8rem;
+    border-radius: 16px;
+    background: rgba(18, 18, 22, 0.82);
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18), 0 1.5px 6px rgba(44, 62, 80, 0.10);
+    color: #fff;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1.5px solid rgba(52, 152, 219, 0.13);
+    transition: box-shadow 0.3s, transform 0.3s, background 0.3s;
+}
+
+.test-card:hover {
+    box-shadow: 0 8px 32px 0 rgba(52,152,219,0.22), 0 4px 16px rgba(44,62,80,0.18);
+    transform: translateY(-3px) scale(1.025);
+    background: rgba(30, 30, 40, 0.92);
+    border-color: #3498db;
+}
+
+.test-name {
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 1.1rem;
+    font-size: 1.08rem;
+    line-height: 1.4;
+    min-height: 38px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.start-test-btn {
+    margin-top: auto;
+    display: block;
+    width: 100%;
+    background: linear-gradient(90deg, #00c6fb 0%, #3498db 100%);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.85rem 0;
+    border-radius: 24px;
+    text-align: center;
+    transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 0.8px;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.18);
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.start-test-btn:hover {
+    background: linear-gradient(90deg, #3498db 0%, #00c6fb 100%);
+    box-shadow: 0 4px 16px rgba(52, 152, 219, 0.28);
+    transform: translateY(-2px) scale(1.04);
+}
+
+/* Если используются иконки внутри .test-card, ограничиваем их размер и убираем наложение */
+.test-card img, .test-card .test-icon {
+    max-width: 48px;
+    max-height: 48px;
+    margin-bottom: 1rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 1;
+    position: relative;
+}
+
+@media (max-width: 900px) {
+    .test-category {
+        padding: 1.2rem 0.5rem 0.5rem 0.5rem;
+    }
+    .category-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.4rem;
+    }
+    .tests-grid {
+        grid-template-columns: 1fr;
+    }
+    .test-card {
+        min-height: 90px;
+        padding: 0.7rem 0.4rem 0.4rem 0.4rem;
+    }
 }

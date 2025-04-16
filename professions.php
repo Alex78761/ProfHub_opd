@@ -4,7 +4,7 @@ require_once "db-connect.php";
 
 // Получаем список всех профессий
 $professions_query = "SELECT * FROM professions ORDER BY name ASC";
-$professions_result = mysqli_query($mysqli, $professions_query);
+$professions_result = $conn->query($professions_query);
 ?>
 
 <!DOCTYPE html>
@@ -13,106 +13,237 @@ $professions_result = mysqli_query($mysqli, $professions_query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профессии - ProfHub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
+    <link href="css/header.css" rel="stylesheet">
+    <link href="css/background.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: transparent;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            width: 40px;
+            height: 40px;
+        }
+
+        .navbar-brand img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .navbar-nav {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link.active {
+            color: #007bff;
+        }
+
+        .hero-section {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin: 6rem auto 2rem;
+            max-width: 1200px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: normal;
+        }
+
+        .hero-section p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .professions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profession-card {
+            background-color: rgba(42, 42, 42, 0.8);
+            border-radius: 10px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profession-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 1rem;
+            filter: invert(1);
+        }
+
+        .profession-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: white;
+            font-weight: normal;
+        }
+
+        .profession-description {
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .btn-more {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: transparent;
+            border: 1px solid #007bff;
+            color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .btn-more:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        footer {
+            background-color: transparent;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            width: 40px;
+            height: 40px;
+        }
+
+        .footer-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .footer-links a {
+            color: #cccccc;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+        }
+    </style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <a class="navbar-brand" href="index.php">
-                    <img src="images/logo.png" alt="ProfHub" height="40">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="professions.php">Профессии</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="tests.php">Тесты</a>
-                        </li>
-                        <?php if (isset($_SESSION['user_id'])): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="profile.php">Личный кабинет</a>
-                            </li>
-                            <?php if ($_SESSION['role'] === 'admin'): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="admin.php">Панель управления</a>
-                                </li>
-                            <?php endif; ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="logout.php">Выйти</a>
-                            </li>
-                        <?php else: ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="login.php">Войти</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="register.php">Регистрация</a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <div class="background"></div>
+    <nav class="navbar">
+        <a href="index.php" class="navbar-brand">
+            <img src="images/logotip.jpg" alt="ProfHub">
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="professions.php" class="nav-link active">Профессии</a></li>
+            <li><a href="tests.php" class="nav-link">Тесты</a></li>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <li><a href="account.php" class="nav-link">Личный кабинет</a></li>
+                <li><a href="logout.php" class="nav-link">Выйти</a></li>
+            <?php else: ?>
+                <li><a href="login.php" class="nav-link">Войти</a></li>
+                <li><a href="register.php" class="nav-link">Регистрация</a></li>
+            <?php endif; ?>
+        </ul>
+    </nav>
 
-    <main>
-        <div class="container">
-            <div class="jumbotron fade-in">
-                <h1>Каталог IT-профессий</h1>
-                <p>Исследуйте различные профессии в сфере информационных технологий и найдите свой путь в IT.</p>
+    <div class="hero-section">
+        <h1>Каталог IT-профессий</h1>
+        <p>Исследуйте различные профессии в сфере информационных технологий и найдите свой путь в IT.</p>
+    </div>
+
+    <div class="professions-grid">
+        <?php while ($profession = $professions_result->fetch_assoc()): ?>
+            <div class="profession-card">
+                <img src="images/document-icon.svg" alt="" class="profession-icon">
+                <h2 class="profession-title"><?php echo htmlspecialchars($profession['name']); ?></h2>
+                <p class="profession-description">
+                    <?php echo htmlspecialchars(substr($profession['description'], 0, 150)) . '...'; ?>
+                </p>
+                <a href="profession.php?id=<?php echo $profession['id']; ?>" class="btn-more">Подробнее</a>
             </div>
+        <?php endwhile; ?>
+    </div>
 
-            <div class="row">
-                <?php while ($profession = mysqli_fetch_assoc($professions_result)): ?>
-                    <div class="col-md-4">
-                        <div class="card profession-card fade-in">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-briefcase"></i>
-                                    <?php echo htmlspecialchars($profession['name']); ?>
-                                </h5>
-                                <p class="card-text">
-                                    <?php echo htmlspecialchars(substr($profession['description'], 0, 150)) . '...'; ?>
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <a href="profession.php?id=<?php echo $profession['id']; ?>" class="btn btn-outline">
-                                        Подробнее
-                                    </a>
-                                    <?php if (isset($_SESSION['user_id'])): ?>
-                                        <a href="rate_profession.php?id=<?php echo $profession['id']; ?>" class="btn btn-outline">
-                                            <i class="fas fa-star"></i> Оценить
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="images/logo.png" alt="ProfHub" height="30">
-                </div>
-                <div class="footer-links">
-                    <a href="about.php">О нас</a>
-                    <a href="contact.php">Контакты</a>
-                    <a href="privacy.php">Конфиденциальность</a>
-                </div>
+    <footer>
+        <div class="footer-content">
+            <a href="index.php" class="footer-logo">
+                <img src="images/logotip.jpg" alt="ProfHub">
+            </a>
+            <div class="footer-links">
+                <a href="about.php">О нас</a>
+                <a href="contact.php">Контакты</a>
+                <a href="privacy.php">Конфиденциальность</a>
             </div>
         </div>
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

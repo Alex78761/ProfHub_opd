@@ -12,11 +12,24 @@ let interval;
 
 // Предварительная загрузка аудиофайла
 const audio = document.getElementById('sound');
-audio.volume = 0.05; // Установка громкости в 5%
+audio.volume = 1.0; // Установка максимальной громкости
 audio.load();
 
+// Добавляем обработчик для разрешения автоматического воспроизведения
+document.addEventListener('click', function() {
+    audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+    }).catch(error => {
+        console.log('Автоматическое воспроизведение заблокировано:', error);
+    });
+}, { once: true });
+
 function playSound() {
-    audio.play();
+    audio.currentTime = 0; // Сбрасываем время воспроизведения
+    audio.play().catch(error => {
+        console.log('Ошибка воспроизведения:', error);
+    });
 }
 
 // Глобальная функция для обработки клика
@@ -68,11 +81,14 @@ function setRandomSound() {
 
 function saveReactionTime(avgReactionTime) {
     const formData = new FormData();
-    formData.append('avgReactionTime', avgReactionTime); // Отправляем только среднее время реакции
+    formData.append('avgReactionTime', avgReactionTime.toString()); // Преобразуем число в строку
 
-    fetch('save_sound_reaction_test.php', {
+    fetch('save_sound_reaction_test.php', { // Исправляем путь к файлу
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
     })
     .then(response => {
         if (!response.ok) {
@@ -81,7 +97,10 @@ function saveReactionTime(avgReactionTime) {
         return response.text();
     })
     .then(data => {
-        console.log(data); // Журнал ответа сервера
+        console.log('Ответ сервера:', data); // Журнал ответа сервера
+        if (data.includes('успешно')) {
+            window.location.href = 'view_test_results.php'; // Перенаправляем на страницу результатов
+        }
     })
     .catch(error => {
         console.error('Проблема с операцией fetch:', error);

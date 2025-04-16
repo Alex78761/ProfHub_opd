@@ -7,30 +7,43 @@ if (isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    require_once 'db_connect.php';
+    require_once 'db-connect.php';
     
     $username = $_POST['username'];
-    $password = md5($_POST['password']);
+    $password = $_POST['password'];
     
-    $stmt = $conn->prepare("SELECT id, username, role FROM users WHERE username = ? AND password = ?");
-    $stmt->bind_param("ss", $username, $password);
+    $stmt = $conn->prepare("SELECT id, username, role, password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows == 1) {
         $user = $result->fetch_assoc();
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
-        header("Location: index.php");
-        exit();
-    } else {
-        $error = "Неверное имя пользователя или пароль";
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+            
+            // Отладочная информация
+            error_log('Login successful:');
+            error_log('User ID: ' . $user['id']);
+            error_log('Username: ' . $user['username']);
+            error_log('Role: ' . $user['role']);
+            
+            header("Location: index.php");
+            exit();
+        }
     }
     
+    $error = "Неверное имя пользователя или пароль";
     $stmt->close();
     $conn->close();
 }
+
+// Отладочная информация о текущей сессии
+error_log('Current session:');
+error_log('Session user_id: ' . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set'));
+error_log('Session role: ' . (isset($_SESSION['role']) ? $_SESSION['role'] : 'not set'));
 ?>
 
 <!DOCTYPE html>

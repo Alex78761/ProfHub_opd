@@ -10,19 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['finalScore'])) {
         exit;
     }
     $finalScore = floatval($_POST['finalScore']);  // Получаем и конвертируем finalScore из строки в число
-    if ($finalScore != 0) {
-        saveResult($userId, $finalScore);
-    } else {
-        echo "Вы не прошли тест.";
-    }
+    saveResult($userId, $finalScore);
     exit;  // Завершаем скрипт после обработки AJAX запроса
 }
 
 function getTestId($testType, $testName) {
-    require '../db-connect.php';
-    $stmt = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
     if ($stmt === false) {
-        die("Ошибка подготовки запроса: " . $mysqli->error);
+        die("Ошибка подготовки запроса: " . $conn->error);
     }
     $stmt->bind_param("ss", $testType, $testName);
     $stmt->execute();
@@ -33,32 +29,31 @@ function getTestId($testType, $testName) {
         return $row['id'];
     } else {
         $stmt->close();
-        return null; // Вернуть null, если не найдено совпадений
+        return null;
     }
 }
 
 function saveResult($userId, $finalScore) {
-    require '../db-connect.php';
+    global $conn;
     $testType = "Оценка мышления";
-    $testName = "Обобщение";
+    $testName = "обобщение";
     
     $testId = getTestId($testType, $testName);
     if ($testId !== null) {
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
         if ($stmt === false) {
-            die("Ошибка подготовки запроса: " . $mysqli->error);
+            die("Ошибка подготовки запроса: " . $conn->error);
         }
-        $stmt->bind_param("iid", $userId, $testId, $finalScore);
+        $stmt->bind_param("iisd", $userId, $testId, $testName, $finalScore);
         if ($stmt->execute()) {
             echo "Результат успешно сохранен.";
         } else {
-            echo "Ошибка при сохранении результата: " . $stmt->error;
+            echo "Ошибка при сохранении результата: " . $conn->error;
         }
         $stmt->close();
     } else {
-        echo "Test ID не найден для '$testType', '$testName'";
+        echo "Ошибка: тест не найден в базе данных.";
     }
-    $mysqli->close();
 }
 ?>
 <!DOCTYPE html>
@@ -106,25 +101,23 @@ function saveResult($userId, $finalScore) {
     <script>
         let tasks = [
             // Easy level tasks
-            { level: 'easy', question: 'Какие фрукты обычно кладут в пирог?', options: ['Яблоки', 'Бананы'], answer: 'Яблоки', score: 1 },
-            { level: 'easy', question: 'Какие из этих животных являются домашними?', options: ['Кошки', 'Лисы'], answer: 'Кошки', score: 1 },
-            { level: 'easy', question: 'Какое из этих растений можно есть?', options: ['Мухомор', 'Картофель'], answer: 'Картофель', score: 1 },
-            { level: 'easy', question: 'Какой из этих предметов тяжелее?', options: ['Пух', 'Железо'], answer: 'Железо', score: 1 },
-            { level: 'easy', question: 'Какое из этих средств передвижения быстрее?', options: ['Велосипед', 'Скутер'], answer: 'Скутер', score: 1 },
+            { level: 'easy', question: 'Что общего у яблока и груши?', options: ['Оба фрукты', 'Оба овощи', 'Оба круглые'], answer: 'Оба фрукты', score: 1 },
+            { level: 'easy', question: 'Что общего у стула и стола?', options: ['Оба мебель', 'Оба деревянные', 'Оба имеют ножки'], answer: 'Оба мебель', score: 1 },
+            { level: 'easy', question: 'Что общего у кошки и собаки?', options: ['Оба домашние животные', 'Оба млекопитающие', 'Оба имеют хвост'], answer: 'Оба домашние животные', score: 1 },
+            { level: 'easy', question: 'Что общего у книги и журнала?', options: ['Оба печатные издания', 'Оба имеют страницы', 'Оба бумажные'], answer: 'Оба печатные издания', score: 1 },
 
             // Medium level tasks
-            { level: 'medium', question: 'Что общего у всех видов транспорта?', options: ['Перемещают людей и грузы', 'Имеют колеса', 'Используют двигатель'], answer: 'Перемещают людей и грузы', score: 2 },
-            { level: 'medium', question: 'Что общего у всех праздников?', options: ['Подарки', 'Торжества', 'Праздничный стол'], answer: 'Торжества', score: 2 },
-            { level: 'medium', question: 'Что общего у всех электронных устройств?', options: ['Используют электричество', 'Могут летать', 'Имеют экран'], answer: 'Используют электричество', score: 2 },
-            { level: 'medium', question: 'Что общего у всех офисных работ?', options: ['Требуют компьютер', 'Требуют физической силы', 'Требуют офисные принадлежности'], answer: 'Требуют компьютер', score: 2 },
-            { level: 'medium', question: 'Что общего у всех школ?', options: ['Учат плавать', 'Учат математике', 'Имеют учебники'], answer: 'Учат математике', score: 2 },
+            { level: 'medium', question: 'Что общего у демократии и республики?', options: ['Оба формы правления', 'Оба основаны на выборах', 'Оба современные системы'], answer: 'Оба формы правления', score: 2 },
+            { level: 'medium', question: 'Что общего у поэзии и прозы?', options: ['Оба литературные жанры', 'Оба используют слова', 'Оба художественные произведения'], answer: 'Оба литературные жанры', score: 2 },
+            { level: 'medium', question: 'Что общего у живописи и скульптуры?', options: ['Оба виды изобразительного искусства', 'Оба создаются художниками', 'Оба имеют форму'], answer: 'Оба виды изобразительного искусства', score: 2 },
+            { level: 'medium', question: 'Что общего у физики и химии?', options: ['Оба естественные науки', 'Оба изучают материю', 'Оба используют эксперименты'], answer: 'Оба естественные науки', score: 2 },
 
             // Hard level tasks
-            { level: 'hard', question: 'Какое общее свойство у всех материалов, используемых для изготовления одежды?', options: ['Ткань', 'Цвет', 'Марка', 'Состав'], answer: 'Ткань', score: 3 },
-            { level: 'hard', question: 'Что общего между книгой и фильмом?', options: ['Сюжет', 'Страницы', 'Автор', 'Жанр'], answer: 'Сюжет', score: 3 },
-            { level: 'hard', question: 'Чем общее у всех приложений для смартфонов?', options: ['Могут звонить', 'Могут устанавливаться', 'Могут копировать текст', 'Могут обновляться'], answer: 'Могут устанавливаться', score: 3 },
-            { level: 'hard', question: 'Что общего у всех спортивных игр?', options: ['Используют мяч', 'Имеют правила', 'Требуют команду', 'Тренируют физическую выносливость'], answer: 'Имеют правила', score: 3 },
-            { level: 'hard', question: 'Что общего у всех источников энергии?', options: ['Производят тепло', 'Производят энергию', 'Имеют батарейки', 'Могут загрязнять окружающую среду'], answer: 'Производят энергию', score: 3 }
+            { level: 'hard', question: 'Что общего у капитализма и социализма?', options: ['Оба экономические системы', 'Оба современные системы', 'Оба имеют классы'], answer: 'Оба экономические системы', score: 3 },
+            { level: 'hard', question: 'Что общего у классицизма и романтизма?', options: ['Оба художественные направления', 'Оба исторические периоды', 'Оба европейские стили'], answer: 'Оба художественные направления', score: 3 },
+            { level: 'hard', question: 'Что общего у импрессионизма и экспрессионизма?', options: ['Оба направления в искусстве', 'Оба возникли в Европе', 'Оба используют цвет'], answer: 'Оба направления в искусстве', score: 3 },
+            { level: 'hard', question: 'Что общего у рационализма и эмпиризма?', options: ['Оба философские направления', 'Оба изучают познание', 'Оба возникли в Новое время'], answer: 'Оба философские направления', score: 3 },
+            { level: 'hard', question: 'Что общего у модернизма и постмодернизма?', options: ['Оба культурные эпохи', 'Оба современные течения', 'Оба критикуют традиции'], answer: 'Оба культурные эпохи', score: 3 }
         ];
         let currentTaskIndex = 0;
         let correctAnswers = 0;
@@ -205,7 +198,7 @@ function saveResult($userId, $finalScore) {
             document.getElementById('taskContainer').classList.add('hidden');
             if (userAnswer === correctAnswer) {
                 correctAnswers++;
-                totalScore += parseInt(score); // Ensure 'score' is treated as a number
+                totalScore += parseInt(score);
                 document.getElementById('correctAnswersContainer').innerHTML = `Правильных ответов: ${correctAnswers}`;
                 document.getElementById('resultContainer').innerHTML = 'Правильно!';
                 currentTaskIndex++;
@@ -227,7 +220,7 @@ function saveResult($userId, $finalScore) {
 
         function saveResult(finalScore) {
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", "", true);  // POST запрос на тот же URL
+            xhr.open("POST", "", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onload = function () {
                 if (this.status >= 200 && this.status < 300) {
@@ -245,8 +238,8 @@ function saveResult($userId, $finalScore) {
         function endTest() {
             clearInterval(interval);
             const now = new Date();
-            const timeTaken = (now - startTime) / 1000; // Время в секундах
-            const finalScore = totalScore / timeTaken; // Рассчитываем итоговый результат, учитывая сумму баллов
+            const timeTaken = (now - startTime) / 1000;
+            const finalScore = totalScore / timeTaken;
 
             document.getElementById('taskContainer').innerHTML = `<h2>Тест завершен</h2>
                 <p>Ваш итоговый результат: ${finalScore.toFixed(2)} баллов в секунду.</p>
@@ -259,52 +252,51 @@ function saveResult($userId, $finalScore) {
             document.querySelector('button[onclick="cancelTest()"]').classList.add('hidden');
             document.querySelector('button[onclick="startTest()"]').classList.remove('hidden');
 
-            // Проверяем, есть ли набранные баллы перед сохранением результатов
             if (totalScore > 0) {
                 saveResult(finalScore);
             } else {
-                document.getElementById('taskContainer').innerHTML += "<p>Вы не прошли тест.</p>";
                 console.log('No points scored. Result not saved.');
             }
         }
+
+        function cancelTest() {
+            clearInterval(interval);
+            document.getElementById('testTitle').classList.remove('hidden');
+            document.getElementById('testDescription').classList.remove('hidden');
+            document.getElementById('taskContainer').classList.add('hidden');
+            document.getElementById('correctAnswersContainer').classList.add('hidden');
+            document.getElementById('timerContainer').classList.add('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('statusMessage').classList.add('hidden');
+            document.querySelector('button[onclick="cancelTest()"]').classList.add('hidden');
+            document.querySelector('button[onclick="startTest()"]').classList.remove('hidden');
+            document.getElementById('statusMessage').innerHTML = 'Тест отменен.';
+            document.getElementById('statusMessage').classList.remove('hidden');
+        }
+
         // Защита от копирования, скриншотов и смены вкладок
-document.addEventListener('copy', (e) => e.preventDefault());
-document.addEventListener('cut', (e) => e.preventDefault());
-document.addEventListener('paste', (e) => e.preventDefault());
+        document.addEventListener('copy', (e) => e.preventDefault());
+        document.addEventListener('cut', (e) => e.preventDefault());
+        document.addEventListener('paste', (e) => e.preventDefault());
 
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-        cancelTest();
-    }
-});
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                cancelTest();
+            }
+        });
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'PrintScreen') {
-        e.preventDefault();
-        alert('Скриншоты отключены.');
-    }
-});
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'PrintScreen') {
+                e.preventDefault();
+                alert('Скриншоты отключены.');
+            }
+        });
 
-window.addEventListener('blur', () => {
-    alert('Не меняйте вкладки во время теста.');
-    cancelTest();
-});
-
-function cancelTest() {
-        clearInterval(interval);
-        document.getElementById('testTitle').classList.remove('hidden');
-        document.getElementById('testDescription').classList.remove('hidden');
-        document.getElementById('taskContainer').classList.add('hidden');
-        document.getElementById('correctAnswersContainer').classList.add('hidden');
-        document.getElementById('timerContainer').classList.add('hidden');
-        document.getElementById('resultContainer').classList.add('hidden');
-        document.getElementById('statusMessage').classList.add('hidden');
-        document.querySelector('button[onclick="cancelTest()"]').classList.add('hidden');
-        document.querySelector('button[onclick="startTest()"]').classList.remove('hidden');
-        document.getElementById('statusMessage').innerHTML = 'Тест отменен.';
-        document.getElementById('statusMessage').classList.remove('hidden');
-
-}
+        window.addEventListener('blur', () => {
+            alert('Не меняйте вкладки во время теста.');
+            cancelTest();
+        });
     </script>
 </body>
 </html>
+<?php $conn->close(); ?>

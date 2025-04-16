@@ -40,13 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($check_result->num_rows > 0) {
             // Обновляем существующую оценку
-            $update_query = "UPDATE ratings SET rating = ?, comment = ?, date_rated = NOW() WHERE user_id = ? AND profession_id = ?";
+            $update_query = "UPDATE ratings SET rating = ?, comment = ? WHERE user_id = ? AND profession_id = ?";
             $update_stmt = $mysqli->prepare($update_query);
             $update_stmt->bind_param("isii", $rating, $comment, $_SESSION['user_id'], $profession_id);
             $update_stmt->execute();
         } else {
             // Добавляем новую оценку
-            $insert_query = "INSERT INTO ratings (user_id, profession_id, rating, comment, date_rated) VALUES (?, ?, ?, ?, NOW())";
+            $insert_query = "INSERT INTO ratings (user_id, profession_id, rating, comment) VALUES (?, ?, ?, ?)";
             $insert_stmt = $mysqli->prepare($insert_query);
             $insert_stmt->bind_param("iiis", $_SESSION['user_id'], $profession_id, $rating, $comment);
             $insert_stmt->execute();

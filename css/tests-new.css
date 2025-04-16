@@ -1,0 +1,200 @@
+/* Общие стили */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+    z-index: -1;
+}
+
+/* Стили для контейнера */
+.container {
+    max-width: 1200px;
+    margin: 80px auto 20px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    color: #fff;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Кнопки */
+button {
+    background: #00a8cc;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+    margin: 10px;
+}
+
+button:hover {
+    background: #0097b7;
+}
+
+/* Тестовая область */
+.test-area {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+/* Цветовой квадрат */
+.colorbox {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+/* Информационные блоки */
+.info-block {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* Счетчики и таймеры */
+.counter, .timer {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Результаты */
+.result-text {
+    font-size: 20px;
+    color: #4CAF50;
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 8px;
+}
+
+/* Навигация */
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.navigation a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.navigation a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Инструкции */
+.instructions {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        margin: 60px 15px 20px;
+        padding: 20px;
+    }
+
+    .colorbox {
+        width: 150px;
+        height: 150px;
+    }
+
+    button {
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Стили для списка тестов */
+.test-list {
+    list-style: none;
+    padding: 0;
+}
+
+.test-type {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.test-type:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.test-names {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.test-names li {
+    margin: 8px 0;
+}
+
+.test-names a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 15px;
+    display: block;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.test-names a:hover {
+    background: rgba(255, 255, 255, 0.1);
+} 

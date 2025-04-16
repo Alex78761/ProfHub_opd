@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "db_connect.php";
+require_once "db-connect.php";
 
 // Получаем user_id и роль из сессии
 $user_id = $_SESSION['user_id'];
@@ -12,7 +12,7 @@ if(isset($_SESSION['user_id'])){
 
     // Получаем информацию о пользователе
     $query_user = "SELECT username, role FROM users WHERE id = ?";
-    $statement = $mysqli->prepare($query_user);
+    $statement = $conn->prepare($query_user);
     $statement->bind_param("i", $user_id);
     $statement->execute();
     $result_user = $statement->get_result();
@@ -33,7 +33,7 @@ if(isset($_SESSION['user_id'])){
 $expert_respondent_data = [];
 if ($is_expert) {
     $query_respondents = "SELECT name, age, user_id FROM respondents";
-    $result_respondents = $mysqli->query($query_respondents);
+    $result_respondents = $conn->query($query_respondents);
 
     // Получаем данные всех респондентов
     while ($row_respondent = $result_respondents->fetch_assoc()) {
@@ -45,7 +45,7 @@ if ($is_expert) {
 $respondent_data = [];
 if ($is_respondent) {
     $query_respondent = "SELECT name, age FROM respondents WHERE user_id = ?";
-    $stmt_respondent = $mysqli->prepare($query_respondent);
+    $stmt_respondent = $conn->prepare($query_respondent);
     $stmt_respondent->bind_param("i", $user_id);
     $stmt_respondent->execute();
     $result_respondent = $stmt_respondent->get_result();
@@ -59,7 +59,7 @@ if ($is_respondent) {
 // Если пользователь эксперт, выполняем запрос для извлечения результатов тестов для всех респондентов
 // Если пользователь респондент, выполняем запрос только для его результатов тестов
 if ($is_expert) {
-    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date, r.name AS respondent_name, r.age AS respondent_age
+    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.score, tr.created_at, r.name AS respondent_name, r.age AS respondent_age
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               INNER JOIN respondents r ON tr.user_id = r.user_id
@@ -68,14 +68,14 @@ if ($is_expert) {
               )
               ORDER BY r.name";
 } elseif ($is_respondent) {
-    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date
+    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.score, tr.created_at
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               WHERE tr.user_id = ?
-              ORDER BY tr.test_date DESC";
+              ORDER BY tr.created_at DESC";
 }
 
-$stmt = $mysqli->prepare($query);
+$stmt = $conn->prepare($query);
 if ($is_respondent) {
     $stmt->bind_param("i", $user_id);
 }
@@ -94,7 +94,7 @@ $stmt->close();
 $progress_data = [];
 foreach ($data as $row) {
     $test_name = $row['test_name'];
-    $result = $row['result'];
+    $result = floatval($row['result']); // Преобразуем результат в число
     if (!isset($progress_data[$test_name])) {
         $progress_data[$test_name] = [
             'test_name' => $test_name,
@@ -103,8 +103,33 @@ foreach ($data as $row) {
         ];
     }
     $progress_data[$test_name]['total_attempts']++;
-    $progress_data[$test_name]['total_time'] += $result; // Суммируем время реакции
+    $progress_data[$test_name]['total_time'] += $result;
 }
+
+// Добавляем проверку на наличие данных
+if (empty($data)) {
+    echo '<div class="container">';
+    echo '<h2>Результаты тестов</h2>';
+    echo '<p>У вас пока нет результатов тестов.</p>';
+    echo '</div>';
+    exit;
+}
+
+// Отображаем результаты тестов
+echo '<div class="container">';
+echo '<h2>Результаты тестов</h2>';
+echo '<table>';
+echo '<tr><th>Тип теста</th><th>Название теста</th><th>Результат (мс)</th><th>Дата</th></tr>';
+foreach ($data as $row) {
+    echo '<tr>';
+    echo '<td>' . htmlspecialchars($row['test_type']) . '</td>';
+    echo '<td>' . htmlspecialchars($row['test_name']) . '</td>';
+    echo '<td>' . round(floatval($row['result']), 2) . '</td>';
+    echo '<td>' . htmlspecialchars($row['created_at']) . '</td>';
+    echo '</tr>';
+}
+echo '</table>';
+echo '</div>';
 ?>
 
 <!DOCTYPE html>
@@ -118,14 +143,186 @@ foreach ($data as $row) {
     <title>Результаты тестов</title>
     <!-- Подключаем библиотеку Google Charts -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            color: white;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            color: #ffd700;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .logo a:hover {
+            color: #fff;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffd700;
+        }
+
+        .container {
+            margin-top: 60px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        h2, h3, h4 {
+            margin-top: 30px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #ffd700;
+        }
+
+        h4 {
+            font-size: 1.2em;
+            color: #ddd;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
+<header>
+    <div class="header-container">
+        <div class="logo">
+            <a href="../index.php">OPDLab</a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.php">Главная</a></li>
+                <li><a href="../tests.php">Тесты</a></li>
+                <li><a href="../account.php">Личный кабинет</a></li>
+                <?php if (isset($_SESSION['username'])): ?>
+                    <li><a href="../logout.php">Выйти</a></li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+    </div>
+</header>
+<div class="container">
 <?php if ($is_expert && !empty($expert_respondent_data)): ?>
     <?php foreach ($expert_respondent_data as $respondent): ?>
         <?php
         // Получаем имя пользователя из таблицы пользователей
         $query_username = "SELECT username FROM users WHERE id = ?";
-        $stmt_username = $mysqli->prepare($query_username);
+        $stmt_username = $conn->prepare($query_username);
         $stmt_username->bind_param("i", $respondent['user_id']);
         $stmt_username->execute();
         $result_username = $stmt_username->get_result();
@@ -134,11 +331,11 @@ foreach ($data as $row) {
         $stmt_username->close();
 
         // Запрос для получения результатов тестов для данного респондента
-        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date
+        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.created_at
                                      FROM test_results tr 
                                      INNER JOIN tests t ON tr.test_id = t.id 
                                      WHERE tr.user_id = ?";
-        $stmt_respondent_results = $mysqli->prepare($query_respondent_results);
+        $stmt_respondent_results = $conn->prepare($query_respondent_results);
         $stmt_respondent_results->bind_param("i", $respondent['user_id']);
         $stmt_respondent_results->execute();
         $result_respondent_results = $stmt_respondent_results->get_result();
@@ -162,23 +359,22 @@ foreach ($data as $row) {
                 <tr>
                     <td><?= $row_respondent_results['test_type'] ?></td>
                     <td><?= $row_respondent_results['test_name'] ?></td>
-                    <td><?= $row_respondent_results['result'] ?></td>
-                    <td><?= $row_respondent_results['test_date'] ?></td>
+                    <td><?= round($row_respondent_results['result'] * 100) . '%' ?></td>
+                    <td><?= $row_respondent_results['created_at'] ?></td>
                 </tr>
             <?php endwhile; ?>
             </tbody>
         </table>
-            <?php 
-            
-            // Создадим массив, чтобы хранить результаты для каждого теста
-            $test_results = array();
+        <?php 
+        // Создадим массив, чтобы хранить результаты для каждого теста
+        $test_results = array();
         $result_respondent_results->data_seek(0); // Сбрасываем указатель результата запроса
         while ($row_respondent_results = $result_respondent_results->fetch_assoc()): 
             // Если у теста есть результат, сохраняем его
             if ($row_respondent_results['result'] !== null) {
                 $test_results[$row_respondent_results['test_name']][] = array(
-                    'date' => $row_respondent_results['test_date'],
-                    'result' => $row_respondent_results['result']
+                    'date' => $row_respondent_results['created_at'],
+                    'result' => $row_respondent_results['result'] * 100
                 );
             }
         endwhile; ?>
@@ -187,7 +383,7 @@ foreach ($data as $row) {
         // Для каждого теста, у которого есть результат, строим график
         foreach ($test_results as $test_name => $test_data): ?>
             <h3><?= $test_name ?></h3>
-            <div id="progress_chart_div_<?= md5($test_name . $respondent['name']) ?>" style="width: 900px; height: 500px;"></div>
+            <div id="progress_chart_div_<?= md5($test_name . $respondent['name']) ?>" class="chart-container"></div>
             <script>
                 google.charts.load('current', {'packages':['corechart']});
                 google.charts.setOnLoadCallback(drawChart<?= md5($test_name . $respondent['name']) ?>);
@@ -234,19 +430,6 @@ foreach ($data as $row) {
 <?php endif; ?>
 
 
-
-
-<header>
-    <p><a href="index.php">Домой</a></p>
-    <?php if (isset($_SESSION['username'])): ?>
-        <p><a href="account.php">Личный кабинет</a></p>
-    <?php endif; ?>
-</header>
-<br>
-<br>
-<br>
-<a href="/tests/tests.php">Назад</a>
-<br>
 <?php if ($is_respondent): ?>
 <h2>История выполнений тестов</h2>
 <br>
@@ -264,8 +447,8 @@ foreach ($data as $row) {
         <tr>
             <td><?= $row['test_type'] ?></td>
             <td><?= $row['test_name'] ?></td>
-            <td><?= $row['result'] ?></td>
-            <td><?= $row['test_date'] ?></td>
+            <td><?= round($row['result'] * 100) . '%' ?></td>
+            <td><?= $row['created_at'] ?></td>
         </tr>
     <?php endforeach; ?>
     </tbody>
@@ -308,7 +491,7 @@ foreach ($data as $row) {
         // Добавляем название теста в массив выведенных тестов
         $printed_tests[] = $test['test_name'];
         ?>
-        <div id="progress_chart_div_<?= $test['test_id'] ?>" style="width: 900px; height: 500px;"></div>
+        <div id="progress_chart_div_<?= $test['test_id'] ?>" class="chart-container"></div>
 
         <script>
             google.charts.load('current', {'packages':['corechart']});
@@ -323,15 +506,16 @@ foreach ($data as $row) {
                 // Добавляем только данные для текущего теста
                 foreach ($tests as $row):
                     if ($row['test_name'] === $test['test_name']):
+                        $result_value = $row['result'] * 100;
                 ?>
-                        data.addRow(['<?= $row['test_date'] ?>', <?= $row['result'] ?>]);
+                        data.addRow(['<?= $row['created_at'] ?>', <?= $result_value ?>]);
                 <?php
                     endif;
                 endforeach;
                 ?>
 
                 var options = {
-                    title: '<?= $test['test_name'] ?>:',
+                    title: '<?= $test['test_name'] ?>',
                     titleTextStyle: {color: 'white', fontSize: 20, bold: true},
                     hAxis: {
                         title: 'Дата выполнения',
@@ -363,6 +547,10 @@ endforeach;
 
 <?php endforeach; ?>
 <?php endif; ?>
-
+</div>
 </body>
 </html>
+
+<?php
+$conn->close();
+?>

@@ -4,15 +4,15 @@ require_once "db-connect.php";
 
 // Получаем последние добавленные профессии
 $latest_professions_query = "SELECT * FROM professions ORDER BY id DESC LIMIT 3";
-$latest_professions_result = mysqli_query($mysqli, $latest_professions_query);
+$latest_professions_result = $conn->query($latest_professions_query);
 
 // Получаем статистику
 $stats_query = "SELECT 
     (SELECT COUNT(*) FROM professions) as total_professions,
     (SELECT COUNT(*) FROM tests) as total_tests,
     (SELECT COUNT(*) FROM users) as total_users";
-$stats_result = mysqli_query($mysqli, $stats_query);
-$stats = mysqli_fetch_assoc($stats_result);
+$stats_result = $conn->query($stats_query);
+$stats = $stats_result->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -52,6 +52,11 @@ $stats = mysqli_fetch_assoc($stats_result);
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="profile.php">Личный кабинет</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="chat.php">
+                                    <i class="fas fa-comments"></i> Чат
+                                </a>
                             </li>
                             <?php if ($_SESSION['role'] === 'admin'): ?>
                                 <li class="nav-item">
@@ -166,7 +171,7 @@ $stats = mysqli_fetch_assoc($stats_result);
             <section class="mb-5">
                 <h2 class="text-center mb-4">Последние добавленные профессии</h2>
                 <div class="row">
-                    <?php while ($profession = mysqli_fetch_assoc($latest_professions_result)): ?>
+                    <?php while ($profession = $latest_professions_result->fetch_assoc()): ?>
                         <div class="col-md-4">
                             <div class="card profession-card fade-in">
                                 <div class="card-body">

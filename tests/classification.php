@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['finalScore'])) {
 }
 
 function getTestId($testType, $testName) {
-    require '../db-connect.php';
-    $stmt = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
+    global $conn;
+    $stmt = $conn->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
     if ($stmt === false) {
-        die("Ошибка подготовки запроса: " . $mysqli->error);
+        die("Ошибка подготовки запроса: " . $conn->error);
     }
     $stmt->bind_param("ss", $testType, $testName);
     $stmt->execute();
@@ -29,32 +29,31 @@ function getTestId($testType, $testName) {
         return $row['id'];
     } else {
         $stmt->close();
-        return null; // Вернуть null, если не найдено совпадений
+        return null;
     }
 }
 
 function saveResult($userId, $finalScore) {
-    require '../db-connect.php';
+    global $conn;
     $testType = "Оценка мышления";
     $testName = "классификация";
     
     $testId = getTestId($testType, $testName);
     if ($testId !== null) {
-        $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
         if ($stmt === false) {
-            die("Ошибка подготовки запроса: " . $mysqli->error);
+            die("Ошибка подготовки запроса: " . $conn->error);
         }
-        $stmt->bind_param("iid", $userId, $testId, $finalScore);
+        $stmt->bind_param("iisd", $userId, $testId, $testName, $finalScore);
         if ($stmt->execute()) {
             echo "Результат успешно сохранен.";
         } else {
-            echo "Ошибка при сохранении результата: " . $stmt->error;
+            echo "Ошибка при сохранении результата: " . $conn->error;
         }
         $stmt->close();
     } else {
-        echo "Test ID не найден для '$testType', '$testName'";
+        echo "Ошибка: тест не найден в базе данных.";
     }
-    $mysqli->close();
 }
 ?>
 <!DOCTYPE html>
