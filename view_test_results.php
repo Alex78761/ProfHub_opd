@@ -119,12 +119,13 @@ if (empty($data)) {
 echo '<div class="container">';
 echo '<h2>Результаты тестов</h2>';
 echo '<table>';
-echo '<tr><th>Тип теста</th><th>Название теста</th><th>Результат (мс)</th><th>Дата</th></tr>';
+echo '<tr><th>Тип теста</th><th>Название теста</th><th>Результат (мс)</th><th>Оценка</th><th>Дата</th></tr>';
 foreach ($data as $row) {
     echo '<tr>';
     echo '<td>' . htmlspecialchars($row['test_type']) . '</td>';
     echo '<td>' . htmlspecialchars($row['test_name']) . '</td>';
     echo '<td>' . round(floatval($row['result']), 2) . '</td>';
+    echo '<td>' . (isset($row['score']) ? round(floatval($row['score']), 2) : '-') . '</td>';
     echo '<td>' . htmlspecialchars($row['created_at']) . '</td>';
     echo '</tr>';
 }
@@ -331,7 +332,7 @@ echo '</div>';
         $stmt_username->close();
 
         // Запрос для получения результатов тестов для данного респондента
-        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.created_at
+        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.score, tr.created_at
                                      FROM test_results tr 
                                      INNER JOIN tests t ON tr.test_id = t.id 
                                      WHERE tr.user_id = ?";
