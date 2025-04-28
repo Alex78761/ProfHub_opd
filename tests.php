@@ -241,6 +241,12 @@ if (isset($tests['Реакция на движущийся объект'])) {
     // Переиндексация массива
     $tests['Реакция на движущийся объект'] = array_values($tests['Реакция на движущийся объект']);
 }
+
+if ($is_admin || $role === 'consultant') {
+    echo '<div class="message"><p>Прохождение тестов недоступно для вашей роли.</p></div>';
+    $conn->close();
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

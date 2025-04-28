@@ -36,6 +36,14 @@ $reviews_stmt = $conn->prepare($reviews_query);
 $reviews_stmt->bind_param("i", $profession_id);
 $reviews_stmt->execute();
 $reviews_result = $reviews_stmt->get_result();
+
+// Получаем средние экспертные оценки
+$expert_query = "SELECT AVG(relevance) as avg_relevance, AVG(demand) as avg_demand, AVG(prospects) as avg_prospects, COUNT(*) as expert_count FROM expert_evaluations WHERE profession_id = ?";
+$expert_stmt = $conn->prepare($expert_query);
+$expert_stmt->bind_param("i", $profession_id);
+$expert_stmt->execute();
+$expert_result = $expert_stmt->get_result();
+$expert_data = $expert_result->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -139,6 +147,17 @@ $reviews_result = $reviews_stmt->get_result();
             <div class="profession-salary"><i class="fas fa-coins"></i> <?php echo htmlspecialchars($profession['salary']); ?> ₽</div>
             <div class="profession-description"><?php echo nl2br(htmlspecialchars($profession['description'])); ?></div>
             <div class="profession-req"><i class="fas fa-list"></i> <?php echo nl2br(htmlspecialchars($profession['requirements'])); ?></div>
+            <?php if ($expert_data['expert_count'] > 0): ?>
+                <div style="margin: 1.2rem 0 0.7rem 0; padding: 1rem; background: rgba(255,215,0,0.08); border-radius: 10px; color: #ffd700; font-size: 1.08rem; font-weight: 500;">
+                    <span style="color:#ffd700;font-weight:700;">Экспертная оценка профессии:</span><br>
+                    Актуальность: <b><?php echo number_format($expert_data['avg_relevance'], 2); ?></b> / 5<br>
+                    Востребованность: <b><?php echo number_format($expert_data['avg_demand'], 2); ?></b> / 5<br>
+                    Перспективы: <b><?php echo number_format($expert_data['avg_prospects'], 2); ?></b> / 5<br>
+                    <span style="color:#8ecfff;font-size:0.98em;">(Оценок: <?php echo $expert_data['expert_count']; ?>)</span>
+                </div>
+            <?php else: ?>
+                <div style="margin: 1.2rem 0 0.7rem 0; color: #ffd700; font-size: 1.01rem;">Экспертная оценка пока отсутствует</div>
+            <?php endif; ?>
         </div>
     </div>
 </body>

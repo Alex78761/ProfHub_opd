@@ -14,21 +14,19 @@ $user_role = $_SESSION['role'];
 $last_id = isset($_GET['last_id']) ? intval($_GET['last_id']) : 0;
 
 // Получаем ID консультанта
-$consultant_query = "SELECT id FROM users WHERE role = 'expert' LIMIT 1";
+$consultant_query = "SELECT id FROM users WHERE role = 'consultant' LIMIT 1";
 $consultant_result = $conn->query($consultant_query);
 $consultant = $consultant_result->fetch_assoc();
 $consultant_id = $consultant['id'];
 
 try {
-    if ($user_role === 'expert') {
+    if ($user_role === 'consultant') {
         // Для консультанта: получаем сообщения с конкретным пользователем
         $user_id_to_chat = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
-        
         if (!$user_id_to_chat) {
             echo json_encode(['success' => false, 'error' => 'No user selected']);
             exit;
         }
-
         $query = "SELECT m.*, u.username as sender_name, u.role as sender_role,
                         CASE WHEN m.sender_id = ? THEN 1 ELSE 0 END as is_sent
                  FROM chat_messages m
@@ -37,11 +35,39 @@ try {
                     OR (m.sender_id = ? AND m.receiver_id = ?))
                  AND m.id > ?
                  ORDER BY m.created_at ASC";
-                 
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("iiiiii", $user_id, $user_id, $user_id_to_chat, $user_id_to_chat, $user_id, $last_id);
+    } elseif ($user_role === 'expert') {
+        // Для эксперта: только чат с консультантом
+        $query = "SELECT m.*, u.username as sender_name, u.role as sender_role,
+                        CASE WHEN m.sender_id = ? THEN 1 ELSE 0 END as is_sent
+                 FROM chat_messages m
+                 JOIN users u ON m.sender_id = u.id
+                 WHERE ((m.sender_id = ? AND m.receiver_id = ?) 
+                    OR (m.sender_id = ? AND m.receiver_id = ?))
+                 AND m.id > ?
+                 ORDER BY m.created_at ASC";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("iiiiii", $user_id, $user_id, $consultant_id, $consultant_id, $user_id, $last_id);
+    } elseif ($user_role === 'admin') {
+        // Для админа: чат только с пользователями (user, respondent)
+        $user_id_to_chat = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
+        if (!$user_id_to_chat) {
+            echo json_encode(['success' => false, 'error' => 'No user selected']);
+            exit;
+        }
+        $query = "SELECT m.*, u.username as sender_name, u.role as sender_role,
+                        CASE WHEN m.sender_id = ? THEN 1 ELSE 0 END as is_sent
+                 FROM chat_messages m
+                 JOIN users u ON m.sender_id = u.id
+                 WHERE ((m.sender_id = ? AND m.receiver_id = ?) 
+                    OR (m.sender_id = ? AND m.receiver_id = ?))
+                 AND m.id > ?
+                 ORDER BY m.created_at ASC";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("iiiiii", $user_id, $user_id, $user_id_to_chat, $user_id_to_chat, $user_id, $last_id);
     } else {
-        // Для пользователя или админа: получаем сообщения только с консультантом
+        // Для пользователя: только чат с консультантом
         $query = "SELECT m.*, u.username as sender_name, u.role as sender_role,
                         CASE WHEN m.sender_id = ? THEN 1 ELSE 0 END as is_sent
                  FROM chat_messages m
@@ -50,7 +76,6 @@ try {
                     OR (m.sender_id = ? AND m.receiver_id = ?))
                  AND m.id > ?
                  ORDER BY m.created_at ASC";
-                 
         $stmt = $conn->prepare($query);
         $stmt->bind_param("iiiiii", $user_id, $user_id, $consultant_id, $consultant_id, $user_id, $last_id);
     }

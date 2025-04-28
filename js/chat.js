@@ -160,8 +160,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для добавления сообщения в чат
     function appendMessage(message) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'}`;
+        messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'} role-${message.sender_role}`;
         messageDiv.setAttribute('data-message-id', message.id);
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar';
+        // Простая иконка по роли
+        if (message.sender_role === 'consultant') {
+            avatarDiv.innerHTML = '<i class="fas fa-user-tie"></i>';
+        } else if (message.sender_role === 'expert') {
+            avatarDiv.innerHTML = '<i class="fas fa-user-graduate"></i>';
+        } else if (message.sender_role === 'admin') {
+            avatarDiv.innerHTML = '<i class="fas fa-user-shield"></i>';
+        } else {
+            avatarDiv.innerHTML = '<i class="fas fa-user"></i>';
+        }
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
@@ -171,7 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const senderSpan = document.createElement('span');
         senderSpan.className = 'sender';
-        senderSpan.textContent = message.sender_name + (message.sender_role === 'expert' ? ' (Консультант)' : '');
+        let roleLabel = '';
+        if (message.sender_role === 'consultant') roleLabel = ' (Консультант)';
+        if (message.sender_role === 'expert') roleLabel = ' (Эксперт)';
+        if (message.sender_role === 'admin') roleLabel = ' (Админ)';
+        senderSpan.textContent = message.sender_name + roleLabel;
 
         const timeSpan = document.createElement('span');
         timeSpan.className = 'time';
@@ -184,6 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         headerDiv.appendChild(timeSpan);
         contentDiv.appendChild(headerDiv);
         contentDiv.appendChild(messageP);
+
+        messageDiv.appendChild(avatarDiv);
         messageDiv.appendChild(contentDiv);
 
         chatMessages.appendChild(messageDiv);

@@ -10,18 +10,19 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['role'];
 
-// Получаем ID консультанта
-$consultant_query = "SELECT id FROM users WHERE role = 'expert' LIMIT 1";
+// Получаем ID консультанта (для эксперта и других ролей)
+$consultant_query = "SELECT id FROM users WHERE role = 'consultant' LIMIT 1";
 $consultant_result = $conn->query($consultant_query);
 $consultant = $consultant_result->fetch_assoc();
 $consultant_id = $consultant['id'];
 
 // Получаем список всех пользователей только для консультанта
 $users_list = [];
-if ($user_role === 'expert') {
+if ($user_role === 'consultant') {
     $users_query = "SELECT DISTINCT u.id, u.username 
                    FROM users u 
-                   WHERE u.role IN ('user', 'admin', 'respondent')
+                   WHERE u.role IN ('user', 'admin', 'respondent', 'expert')
+                   AND u.id != $user_id
                    ORDER BY u.username";
     $users_result = $conn->query($users_query);
     while ($user = $users_result->fetch_assoc()) {
@@ -29,8 +30,16 @@ if ($user_role === 'expert') {
     }
 }
 
-// Получаем ID активного чата
-$active_chat_user = isset($_GET['user_id']) ? intval($_GET['user_id']) : ($users_list[0]['id'] ?? null);
+// Для консультанта: выбираем активного пользователя из списка
+if ($user_role === 'consultant') {
+    $active_chat_user = isset($_GET['user_id']) ? intval($_GET['user_id']) : ($users_list[0]['id'] ?? null);
+} elseif ($user_role === 'expert') {
+    // Для эксперта: всегда чат только с консультантом
+    $active_chat_user = $consultant_id;
+} else {
+    // Для обычного пользователя или админа: чат с консультантом
+    $active_chat_user = $consultant_id;
+}
 
 // Обработка отправки сообщения
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
@@ -54,8 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
 }
 
 // Получаем историю сообщений
-if ($user_role === 'expert') {
-    // Для консультанта показываем переписку с выбранным пользователем
+if ($user_role === 'consultant' && $active_chat_user) {
+    // Консультант видит чат с выбранным пользователем
     $messages_query = "SELECT m.*, u.username as sender_name, u.role as sender_role
                       FROM chat_messages m 
                       JOIN users u ON m.sender_id = u.id 
@@ -65,7 +74,7 @@ if ($user_role === 'expert') {
     $stmt = $conn->prepare($messages_query);
     $stmt->bind_param("iiii", $user_id, $active_chat_user, $active_chat_user, $user_id);
 } else {
-    // Для обычного пользователя или админа показываем переписку только с консультантом
+    // Для эксперта, обычного пользователя или админа — чат только с консультантом
     $messages_query = "SELECT m.*, u.username as sender_name, u.role as sender_role
                       FROM chat_messages m 
                       JOIN users u ON m.sender_id = u.id 
@@ -95,15 +104,35 @@ $messages_result = $stmt->get_result();
     <?php include 'header.php'; ?>
 
     <div class="chat-container <?php echo $user_role === 'expert' ? 'with-sidebar' : ''; ?>">
-        <?php if ($user_role === 'expert' && !empty($users_list)): ?>
+        <?php if ($user_role === 'consultant' && !empty($users_list)): ?>
         <div class="chat-sidebar">
             <h2>Пользователи</h2>
             <div class="users-list">
                 <?php foreach ($users_list as $chat_user): ?>
                     <a href="?user_id=<?php echo $chat_user['id']; ?>" 
                        class="user-item <?php echo $chat_user['id'] === $active_chat_user ? 'active' : ''; ?>">
-                        <i class="fas fa-user"></i>
+                        <span class="avatar">
+                            <?php
+                            $role_icon = '<i class="fas fa-user"></i>';
+                            $role_label = '';
+                            if ($chat_user['username'] === 'admin') {
+                                $role_icon = '<i class="fas fa-user-shield"></i>';
+                                $role_label = 'Админ';
+                            } elseif ($chat_user['username'] === 'expert') {
+                                $role_icon = '<i class="fas fa-user-graduate"></i>';
+                                $role_label = 'Эксперт';
+                            } elseif ($chat_user['username'] === 'consultant') {
+                                $role_icon = '<i class="fas fa-user-tie"></i>';
+                                $role_label = 'Консультант';
+                            } else {
+                                $role_icon = '<i class="fas fa-user"></i>';
+                                $role_label = 'Пользователь';
+                            }
+                            echo $role_icon;
+                            ?>
+                        </span>
                         <?php echo htmlspecialchars($chat_user['username']); ?>
+                        <span class="role-label"><?php echo $role_label; ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>
@@ -113,13 +142,15 @@ $messages_result = $stmt->get_result();
         <div class="chat-main">
             <div class="chat-header">
                 <h1>
-                    <?php if ($user_role === 'expert'): ?>
+                    <?php if ($user_role === 'consultant'): ?>
                         Чат с <?php 
                         $active_user = array_filter($users_list, function($u) use ($active_chat_user) {
                             return $u['id'] === $active_chat_user;
                         });
                         echo htmlspecialchars(reset($active_user)['username'] ?? 'пользователем');
                         ?>
+                    <?php elseif ($user_role === 'expert'): ?>
+                        Чат с консультантом
                     <?php else: ?>
                         Чат с консультантом
                     <?php endif; ?>
