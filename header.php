@@ -151,6 +151,12 @@ if (isset($_SESSION['user_id'])) {
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="admin.php">Панель управления</a></li>
                                     <?php endif; ?>
+                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'expert'): ?>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="expert_panel.php">Оценка профессий</a></li>
+                                        <li><a class="dropdown-item" href="expert_pvk_results.php">Результаты эксперта</a></li>
+                                        <li><a class="dropdown-item" href="expert_profile.php">Профиль эксперта</a></li>
+                                    <?php endif; ?>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="logout.php">Выйти</a></li>
                                 </ul>

@@ -49,304 +49,97 @@ $reviews_result = $reviews_stmt->get_result();
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: white;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #181a1b;
+            color: #f5f6fa;
             min-height: 100vh;
+        }
+        .main-content {
+            margin-top: 7rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 60vh;
+        }
+        .profession-simple-card {
+            background: rgba(255,255,255,0.07);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 2.5rem 2rem 2rem 2rem;
+            min-width: 320px;
+            max-width: 500px;
+            width: 100%;
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
+            border: 1.5px solid rgba(0,123,255,0.08);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.7s cubic-bezier(.39,.575,.56,1) both;
         }
-
-        .navbar {
-            background-color: transparent;
-            padding: 1rem 2rem;
+        .profession-title {
+            color: #fff;
+            font-size: 2.1rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .profession-salary {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 1.15rem;
+            margin-bottom: 1.1rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+            gap: 0.5rem;
         }
-
-        .navbar-brand {
-            width: 40px;
-            height: 40px;
-        }
-
-        .navbar-brand img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .navbar-nav {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link.active {
-            color: #007bff;
-        }
-
-        .main-content {
-            margin-top: 6rem;
-            padding: 2rem;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .profession-header {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 2rem;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 2rem;
-        }
-
-        .profession-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: normal;
-        }
-
-        .rating {
-            color: #ffc107;
-            margin-bottom: 1rem;
-        }
-
-        .rating .far {
-            color: #4a4a4a;
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-        }
-
-        .card {
-            background-color: rgba(42, 42, 42, 0.8);
-            border-radius: 10px;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            margin-bottom: 2rem;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: white;
-            font-weight: normal;
-        }
-
-        .card-text {
-            color: #cccccc;
+        .profession-description {
+            color: #e0e0e0;
+            margin-bottom: 1.2rem;
+            font-size: 1.08rem;
             line-height: 1.6;
-            margin-bottom: 0;
         }
-
-        .btn-rate {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: transparent;
-            border: 1px solid #007bff;
+        .profession-req {
+            color: #8ecfff;
+            font-size: 1.01rem;
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .profession-req i {
             color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.9rem;
         }
-
-        .btn-rate:hover {
-            background-color: #007bff;
-            color: white;
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: none; }
         }
-
-        .review {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
+        @media (max-width: 600px) {
+            .main-content {
+                margin-top: 5rem;
+                padding: 0 0.2rem;
         }
-
-        .review:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .review-date {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        footer {
-            background-color: transparent;
-            padding: 2rem;
-            margin-top: auto;
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-logo {
-            width: 40px;
-            height: 40px;
-        }
-
-        .footer-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .footer-links a {
-            color: #cccccc;
-            text-decoration: none;
-            margin-left: 2rem;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: white;
-        }
-
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            .profession-simple-card {
+                padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+                min-width: unset;
+                max-width: 100vw;
+            }
+            .profession-title {
+                font-size: 1.3rem;
+            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <?php include 'header.php'; ?>
     <div class="background"></div>
-    <nav class="navbar">
-        <a href="index.php" class="navbar-brand">
-            <img src="images/logotip.jpg" alt="ProfHub">
-        </a>
-        <ul class="navbar-nav">
-            <li><a href="professions.php" class="nav-link">Профессии</a></li>
-            <li><a href="tests.php" class="nav-link">Тесты</a></li>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <li><a href="account.php" class="nav-link">Личный кабинет</a></li>
-                <li><a href="logout.php" class="nav-link">Выйти</a></li>
-            <?php else: ?>
-                <li><a href="login.php" class="nav-link">Войти</a></li>
-                <li><a href="register.php" class="nav-link">Регистрация</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-
     <div class="main-content">
-        <div class="profession-header">
-            <h1><?php echo htmlspecialchars($profession['name']); ?></h1>
-            <div class="rating">
-                <?php
-                $rating = round($rating_data['avg_rating'] ?? 0);
-                for ($i = 1; $i <= 5; $i++): ?>
-                    <i class="fa<?php echo $i <= $rating ? 's' : 'r'; ?> fa-star"></i>
-                <?php endfor; ?>
-                <span style="color: #cccccc; margin-left: 0.5rem;">(<?php echo $rating_data['rating_count']; ?> оценок)</span>
-            </div>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="rate_profession.php?id=<?php echo $profession_id; ?>" class="btn-rate">
-                    <i class="fas fa-star"></i> Оценить профессию
-                </a>
-            <?php endif; ?>
-        </div>
-
-        <div class="content-grid">
-            <div class="main-info">
-                <div class="card">
-                    <h2 class="card-title">Описание профессии</h2>
-                    <p class="card-text"><?php echo nl2br(htmlspecialchars($profession['description'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">Требования к специалисту</h2>
-                    <p class="card-text"><?php echo nl2br(htmlspecialchars($profession['requirements'])); ?></p>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">Перспективы развития</h2>
-                    <p class="card-text"><?php echo nl2br(htmlspecialchars($profession['prospects'])); ?></p>
-                </div>
-            </div>
-
-            <div class="side-info">
-                <div class="card">
-                    <h2 class="card-title">Средняя зарплата</h2>
-                    <p class="card-text"><?php echo number_format($profession['avg_salary'], 0, ',', ' '); ?> ₽</p>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">Последние отзывы</h2>
-                    <?php if ($reviews_result->num_rows > 0): ?>
-                        <?php while ($review = $reviews_result->fetch_assoc()): ?>
-                            <div class="review">
-                                <div class="review-header">
-                                    <strong><?php echo htmlspecialchars($review['username']); ?></strong>
-                                    <span class="review-date">
-                                        <?php echo date('d.m.Y', strtotime($review['created_at'])); ?>
-                                    </span>
-                                </div>
-                                <div class="rating">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <i class="fa<?php echo $i <= $review['rating'] ? 's' : 'r'; ?> fa-star"></i>
-                                    <?php endfor; ?>
-                                </div>
-                                <p class="card-text"><?php echo htmlspecialchars($review['comment']); ?></p>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p class="card-text">Пока нет отзывов</p>
-                    <?php endif; ?>
-                </div>
-            </div>
+        <div class="profession-simple-card">
+            <div class="profession-title"><?php echo htmlspecialchars($profession['name']); ?></div>
+            <div class="profession-salary"><i class="fas fa-coins"></i> <?php echo htmlspecialchars($profession['salary']); ?> ₽</div>
+            <div class="profession-description"><?php echo nl2br(htmlspecialchars($profession['description'])); ?></div>
+            <div class="profession-req"><i class="fas fa-list"></i> <?php echo nl2br(htmlspecialchars($profession['requirements'])); ?></div>
         </div>
     </div>
-
-    <footer>
-        <div class="footer-content">
-            <a href="index.php" class="footer-logo">
-                <img src="images/logotip.jpg" alt="ProfHub">
-            </a>
-            <div class="footer-links">
-                <a href="about.php">О нас</a>
-                <a href="contact.php">Контакты</a>
-                <a href="privacy.php">Конфиденциальность</a>
-            </div>
-        </div>
-    </footer>
 </body>
 </html> 

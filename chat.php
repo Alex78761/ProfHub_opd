@@ -21,8 +21,7 @@ $users_list = [];
 if ($user_role === 'expert') {
     $users_query = "SELECT DISTINCT u.id, u.username 
                    FROM users u 
-                   LEFT JOIN chat_messages cm ON (cm.sender_id = u.id OR cm.receiver_id = u.id)
-                   WHERE u.role IN ('user', 'admin')
+                   WHERE u.role IN ('user', 'admin', 'respondent')
                    ORDER BY u.username";
     $users_result = $conn->query($users_query);
     while ($user = $users_result->fetch_assoc()) {

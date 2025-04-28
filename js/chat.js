@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработка клика по пользователю в списке
     userItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const userId = item.dataset.userId;
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const userId = item.getAttribute('href').split('=')[1];
             activeUserId = userId;
-            receiverInput.value = userId;
             
             // Визуальное выделение активного пользователя
             userItems.forEach(u => u.classList.remove('active'));
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const formData = new FormData();
             formData.append('content', message);
-            formData.append('recipient_id', userRole === 'expert' ? activeChatUser : consultantId);
+            formData.append('recipient_id', activeUserId);
 
             const response = await fetch('send_message.php', {
                 method: 'POST',
@@ -94,26 +94,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 last_id: lastMessageId
             });
 
-            if (userRole === 'expert' && activeChatUser) {
-                params.append('user_id', activeChatUser);
+            if (activeUserId) {
+                params.append('user_id', activeUserId);
             }
 
-            const response = await fetch(`get_messages.php?${params}`);
+            const response = await fetch(`get_messages.php?${params.toString()}`);
             const data = await response.json();
 
-            if (data.success && data.messages && data.messages.length > 0) {
+            if (data.success) {
                 data.messages.forEach(message => {
-                    const messageElement = createMessageElement(message);
-                    chatMessages.appendChild(messageElement);
+                    if (!document.querySelector(`[data-message-id="${message.id}"]`)) {
+                        appendMessage(message);
                     lastMessageId = Math.max(lastMessageId, message.id);
+                        
+                        // Воспроизводим звук уведомления для новых входящих сообщений
+                        if (!message.is_sent && !isWindowFocused && notificationPermission) {
+                            notificationSound.play();
+                        }
+                    }
                 });
 
                 scrollToBottom();
-
-                // Проигрываем звук для новых сообщений
-                if (!isWindowFocused && notificationSound) {
-                    notificationSound.play().catch(() => {});
-                }
             }
         } catch (error) {
             console.error('Error loading messages:', error);
@@ -154,6 +155,38 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(content);
         
         return div;
+    }
+
+    // Функция для добавления сообщения в чат
+    function appendMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'}`;
+        messageDiv.setAttribute('data-message-id', message.id);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'message-header';
+
+        const senderSpan = document.createElement('span');
+        senderSpan.className = 'sender';
+        senderSpan.textContent = message.sender_name + (message.sender_role === 'expert' ? ' (Консультант)' : '');
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'time';
+        timeSpan.textContent = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const messageP = document.createElement('p');
+        messageP.textContent = message.content;
+
+        headerDiv.appendChild(senderSpan);
+        headerDiv.appendChild(timeSpan);
+        contentDiv.appendChild(headerDiv);
+        contentDiv.appendChild(messageP);
+        messageDiv.appendChild(contentDiv);
+
+        chatMessages.appendChild(messageDiv);
     }
 
     // Обработчик отправки формы

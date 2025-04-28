@@ -75,6 +75,7 @@ if ($is_expert) {
               ORDER BY tr.created_at DESC";
 }
 
+if (isset($query) && $query) {
 $stmt = $conn->prepare($query);
 if ($is_respondent) {
     $stmt->bind_param("i", $user_id);
@@ -89,6 +90,9 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+} else {
+    $data = [];
+}
 
 // Создаем массив данных для диаграммы прогресса
 $progress_data = [];
@@ -110,7 +114,7 @@ foreach ($data as $row) {
 if (empty($data)) {
     echo '<div class="container">';
     echo '<h2>Результаты тестов</h2>';
-    echo '<p>У вас пока нет результатов тестов.</p>';
+    echo '<p>Нет данных для отображения.</p>';
     echo '</div>';
     exit;
 }
