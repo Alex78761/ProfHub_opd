@@ -37,9 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
     elseif ($_POST['action'] === 'delete') {
         $id = intval($_POST['id']);
+        // Сначала удаляем все связанные оценки ПВК
+        $stmt = $conn->prepare("DELETE FROM expert_pvk_ratings WHERE profession_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+        // Теперь удаляем профессию
         $stmt = $conn->prepare("DELETE FROM professions WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
+        $stmt->close();
     }
     
     header("Location: admin_professions.php");
@@ -65,7 +72,7 @@ $professions_result = $conn->query($professions_query);
             max-width: 1200px;
             margin: 100px auto;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(255, 255, 255, 0.23);
             border-radius: 10px;
             backdrop-filter: blur(10px);
         }

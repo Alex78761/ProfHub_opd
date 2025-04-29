@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once "db-connect.php";
 
-// Принудительно проверяем роль из базы данных
+// Проверка роли пользователя
 if (isset($_SESSION['user_id'])) {
     $check_role_stmt = $conn->prepare("SELECT u.id, u.username, u.role FROM users u WHERE u.id = ?");
     $check_role_stmt->bind_param("i", $_SESSION['user_id']);
@@ -16,209 +16,221 @@ if (isset($_SESSION['user_id'])) {
     $check_role_stmt->close();
 }
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProfHub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/header.css">
-    <?php if (basename($_SERVER['PHP_SELF']) === 'index.php'): ?>
-    <style>
-    .main-page-nav {
-        margin-top: 1rem;
-        padding: 0.5rem 0;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 8px;
-    }
-    .main-page-nav .nav-link {
-        color: rgba(255, 255, 255, 0.8);
-        padding: 0.5rem 1rem;
-        margin: 0 0.25rem;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-    }
-    .main-page-nav .nav-link:hover {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-    .main-page-nav .nav-link i {
-        margin-right: 0.5rem;
-    }
-    </style>
-    <?php endif; ?>
-</head>
-<body class="bg-dark">
-    <div class="video-background">
-        <video autoplay muted loop playsinline>
-            <source src="images/fontop.mp4" type="video/mp4">
-        </video>
-        <div class="overlay"></div>
-    </div>
 
-    <header class="header">
-        <nav class="navbar navbar-expand-lg navbar-dark h-100">
-            <div class="container h-100">
-                <a class="navbar-brand d-flex align-items-center h-100" href="index.php">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    <span class="brand-text">ProfHub</span>
-                </a>
+<header class="header">
+    <div class="header-container">
+        <!-- Логотип -->
+        <a class="logo" href="index.php">ProfHub</a>
+        
+        <!-- Основное меню -->
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a class="nav-link<?php if(basename($_SERVER['PHP_SELF'])=='professions.php') echo ' active'; ?>" href="professions.php">Профессии</a>
+                </li>
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <?php if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'expert', 'consultant'])): ?>
+                <li class="nav-item dropdown">
+                    <div class="dropdown-wrapper">
+                        <button class="nav-link dropdown-btn<?php if(in_array(basename($_SERVER['PHP_SELF']), ['tests.php', 'test_results.php'])) echo ' active'; ?>">
+                            Тесты <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item<?php if(basename($_SERVER['PHP_SELF'])=='tests.php') echo ' active'; ?>" href="tests.php">Пройти тест</a>
+                            <a class="dropdown-item<?php if(basename($_SERVER['PHP_SELF'])=='test_results.php') echo ' active'; ?>" href="view_test_results.php">Результаты тестов</a>
+                        </div>
+                    </div>
+                </li>
+                <?php endif; ?>
+                
+                <li class="nav-item">
+                    <a class="nav-link<?php if(basename($_SERVER['PHP_SELF'])=='chat.php') echo ' active'; ?>" href="chat.php">Чат</a>
+                </li>
+            </ul>
+        </nav>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <ul class="navbar-nav me-auto">
-                            <!-- Профессии -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="professionsDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-briefcase"></i> Профессии
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="professions.php">Все профессии</a></li>
-                                    <li><a class="dropdown-item" href="rated_professions.php">Оцененные профессии</a></li>
-                                    <li><a class="dropdown-item" href="profession_details.php">Детали профессий</a></li>
-                                </ul>
-                            </li>
-
-                            <!-- Тесты -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="testsDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-tasks"></i> Тесты
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="tests.php">Все тесты</a></li>
-                                    <li><a class="dropdown-item" href="view_test_results.php">Результаты тестов</a></li>
-                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                                        <li><a class="dropdown-item" href="add_tests.php">Добавить тест</a></li>
-                                    <?php endif; ?>
-                                </ul>
-                            </li>
-
-                            <!-- Обучение -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="learningDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-book"></i> Обучение
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="progress.php">Мой прогресс</a></li>
-                                    <li><a class="dropdown-item" href="suitability.php">Профпригодность</a></li>
-                                    <li><a class="dropdown-item" href="recommendations.php">Рекомендации</a></li>
-                                </ul>
-                            </li>
-
-                            <!-- Сообщество -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="communityDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-users"></i> Сообщество
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="chat.php">Чат</a></li>
-                                    <li><a class="dropdown-item" href="experts.php">Эксперты</a></li>
-                                    <li><a class="dropdown-item" href="forum.php">Форум</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-
-                        <ul class="navbar-nav align-items-center">
-                            <!-- Уведомления -->
-                            <li class="nav-item me-2">
-                                <a class="nav-link position-relative p-1" href="notifications.php">
-                                    <i class="fas fa-bell"></i>
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                        <span id="notifications-count">0</span>
-                                    </span>
-                                </a>
-                            </li>
-
-                            <!-- Профиль -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle p-1" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-circle"></i>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="profile.php">Мой профиль</a></li>
-                                    <li><a class="dropdown-item" href="my_results.php">Мои результаты</a></li>
-                                    <li><a class="dropdown-item" href="settings.php">Настройки</a></li>
-                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="admin.php">Панель управления</a></li>
-                                    <?php endif; ?>
-                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'expert'): ?>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="expert_panel.php">Оценка профессий</a></li>
-                                        <li><a class="dropdown-item" href="expert_pvk_results.php">Результаты эксперта</a></li>
-                                        <li><a class="dropdown-item" href="expert_profile.php">Профиль эксперта</a></li>
-                                    <?php endif; ?>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="logout.php">Выйти</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    <?php else: ?>
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link btn btn-primary" href="login.php">
-                                    <i class="fas fa-sign-in-alt"></i> Войти
-                                </a>
-                            </li>
-                            <li class="nav-item ms-2">
-                                <a class="nav-link btn btn-outline-light" href="register.php">
-                                    <i class="fas fa-user-plus"></i> Регистрация
-                                </a>
-                            </li>
-                        </ul>
-                    <?php endif; ?>
+        <!-- Профиль/авторизация -->
+        <div class="auth-section">
+            <?php if (!isset($_SESSION['user_id'])): ?>
+                <a class="auth-btn login-btn" href="login.php">Войти</a>
+                <a class="auth-btn register-btn" href="register.php">Регистрация</a>
+            <?php else: ?>
+                <div class="profile-dropdown">
+                    <button class="profile-btn" id="profileDropdownBtn">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Мой профиль</span>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </button>
+                    <div class="dropdown-menu profile-menu" id="profileDropdown">
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                            <a class="dropdown-item" href="admin_professions.php">
+                                <i class="fas fa-edit"></i> Редактировать профессии
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'expert'): ?>
+                            <a class="dropdown-item" href="expert_panel.php">
+                                <i class="fas fa-edit"></i> Оценка профессий
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        <?php endif; ?>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="logout.php">
+                            <i class="fas fa-sign-out-alt"></i> Выйти
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-
-    <?php if (basename($_SERVER['PHP_SELF']) === 'index.php'): ?>
-    <div class="container">
-        <nav class="main-page-nav">
-            <div class="d-flex flex-wrap justify-content-center gap-2">
-                <a href="professions.php" class="nav-link">
-                    <i class="fas fa-briefcase"></i>Каталог профессий
-                </a>
-                <a href="tests.php" class="nav-link">
-                    <i class="fas fa-tasks"></i>Тестирование
-                </a>
-                <a href="experts.php" class="nav-link">
-                    <i class="fas fa-user-tie"></i>Консультации
-                </a>
-                <a href="forum.php" class="nav-link">
-                    <i class="fas fa-comments"></i>Форум
-                </a>
-                <a href="progress.php" class="nav-link">
-                    <i class="fas fa-chart-line"></i>Отслеживание прогресса
-                </a>
-                <a href="recommendations.php" class="nav-link">
-                    <i class="fas fa-lightbulb"></i>Рекомендации
-                </a>
-                <a href="suitability.php" class="nav-link">
-                    <i class="fas fa-check-circle"></i>Профпригодность
-                </a>
-                <a href="chat.php" class="nav-link">
-                    <i class="fas fa-comment-dots"></i>Чат с экспертами
-                </a>
-            </div>
-        </nav>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Кнопка мобильного меню -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+        </button>
     </div>
-    <?php endif; ?>
+</header>
 
-    <!-- Bootstrap и другие скрипты -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+/* Добавляем стили для выпадающего меню тестов */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+}
+
+.nav-item.dropdown .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 8px 0;
+}
+
+.nav-item.dropdown.active .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown-item.active {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 4px 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Управление выпадающим меню тестов
+    const testDropdowns = document.querySelectorAll('.nav-item.dropdown .dropdown-btn');
     
+    testDropdowns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropdown = this.closest('.nav-item.dropdown');
+            
+            // Закрываем все другие открытые меню
+            document.querySelectorAll('.nav-item.dropdown').forEach(item => {
+                if (item !== dropdown) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Переключаем текущее меню
+            dropdown.classList.toggle('active');
+        });
+    });
+    
+    // Управление выпадающим меню профиля
+    const profileBtn = document.getElementById('profileDropdownBtn');
+    const profileMenu = document.getElementById('profileDropdown');
+    
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Закрываем все другие открытые меню
+            document.querySelectorAll('.profile-dropdown').forEach(dropdown => {
+                if (dropdown !== this.closest('.profile-dropdown')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+            
+            // Переключаем текущее меню
+            this.closest('.profile-dropdown').classList.toggle('active');
+        });
+    }
+    
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-item.dropdown')) {
+            document.querySelectorAll('.nav-item.dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+        
+        if (!e.target.closest('.profile-dropdown')) {
+            document.querySelectorAll('.profile-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+    
+    // Мобильное меню
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const header = document.querySelector('.header');
+    
+    if (mobileMenuBtn && header) {
+        mobileMenuBtn.addEventListener('click', function() {
+            header.classList.toggle('mobile-menu-open');
+            
+            const menuLines = document.querySelectorAll('.menu-line');
+            if (header.classList.contains('mobile-menu-open')) {
+                menuLines[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                menuLines[1].style.opacity = '0';
+                menuLines[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+            } else {
+                menuLines.forEach(line => {
+                    line.style.transform = '';
+                    line.style.opacity = '';
+                });
+            }
+        });
+    }
+    
+    // Обновление непрочитанных сообщений
     <?php if (isset($_SESSION['user_id'])): ?>
-    <script>
     function updateUnreadMessages() {
         fetch('get_unread_messages.php')
             .then(response => response.json())
@@ -243,10 +255,9 @@ if (isset($_SESSION['user_id'])) {
             })
             .catch(error => console.error('Ошибка при получении непрочитанных сообщений:', error));
     }
-
+    
     setInterval(updateUnreadMessages, 30000);
     updateUnreadMessages();
-    </script>
     <?php endif; ?>
-</body>
-</html> 
+});
+</script>

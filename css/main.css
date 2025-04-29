@@ -9,6 +9,33 @@
     overflow: hidden;
 }
 
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+}
+
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.video-background video {
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+}
+
 .video-background video {
     position: absolute;
     min-width: 100%;
@@ -582,3 +609,21 @@ main {
 ::-webkit-scrollbar-thumb:hover {
     background: #444;
 } 
+
+body {
+    position: relative;
+    overflow-x: hidden;
+}
+
+.video-background,
+.video-background video {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.it-popular-card,
+.profession-card {
+    opacity: 1 !important;
+    transform: none !important;
+}

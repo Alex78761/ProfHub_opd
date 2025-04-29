@@ -1,6 +1,6 @@
 <?php
 // Подключение к базе данных
-require_once "db_connect.php";
+require_once "db-connect.php";
 
 session_start();
 
@@ -8,7 +8,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Гость';
 
 // Получаем список профессий из базы данных
 $query_professions = "SELECT * FROM professions";
-$result_professions = $mysqli->query($query_professions);
+$result_professions = $conn->query($query_professions);
 
 ?>
 
@@ -17,8 +17,8 @@ $result_professions = $mysqli->query($query_professions);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/rated.css">
-    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="css/rated.css">
+    <link rel="stylesheet" href="css/header.css">
     <title>Результаты оценок профессий</title>
 </head>
 <body>
@@ -33,24 +33,24 @@ $result_professions = $mysqli->query($query_professions);
     <?php while ($row_profession = $result_professions->fetch_assoc()): ?>
         <div class="profession">
             <h3><?php echo $row_profession['name']; ?></h3>
-            <h3><?php echo $row_profession['name']; ?></h3>
-            <p><strong>Описание:</strong> <?php echo $row_profession['description']; ?></p>
-            <h4>Средняя оценка ПВК:</h4>
+            <p><span style="color:#888;">Описание:</span> <?php echo $row_profession['description']; ?></p>
+            <div class="block-title">Оценка экспертов (средняя по ПВК)</div>
             <?php
             // Получаем среднюю оценку для каждой ПВК от экспертов
             $profession_id = $row_profession['id'];
-            $query_expert_avg_ratings = "SELECT pvk.name, AVG(ratings.rating) as avg_rating
+            $query_expert_avg_ratings = "SELECT 
+                                  pvk.id as pvk_id,
+                                  pvk.name, 
+                                  AVG(ratings.rating) as avg_rating
                                   FROM pvk
                                   LEFT JOIN ratings ON pvk.id = ratings.pvk_id
                                   WHERE ratings.profession_id = $profession_id
                                   AND ratings.user_id IN (SELECT user_id FROM users WHERE role = 'expert')
-                                  GROUP BY pvk.id
-                                  HAVING avg_rating IS NOT NULL
-                                  ORDER BY ratings.created_at DESC";
-            $result_expert_avg_ratings = $mysqli->query($query_expert_avg_ratings);
-
-            // Выводим среднюю оценку для каждой ПВК от экспертов в виде полосы прогресса
-            while ($row_expert_avg_rating = $result_expert_avg_ratings->fetch_assoc()): ?>
+                                  GROUP BY pvk.id, pvk.name
+                                  HAVING avg_rating IS NOT NULL";
+            $result_expert_avg_ratings = $conn->query($query_expert_avg_ratings);
+            $has_expert = false;
+            while ($row_expert_avg_rating = $result_expert_avg_ratings->fetch_assoc()): $has_expert = true; ?>
                 <div class="pvk">
                     <span><?php echo $row_expert_avg_rating['name']; ?></span>
                 </div>
@@ -58,27 +58,45 @@ $result_professions = $mysqli->query($query_professions);
                     <div class="progress-bar-inner" style="width: <?php echo ($row_expert_avg_rating['avg_rating'] * 10); ?>%;"></div>
                 </div>
                 <span class="progress-label"><?php echo number_format($row_expert_avg_rating['avg_rating'], 1); ?></span>
+                <!-- Список экспертов по ПВК -->
+                <details style="margin-bottom:8px;">
+                  <summary style="color:#8ecfff; cursor:pointer; font-size:0.98em;">Показать экспертов</summary>
+                  <?php
+                  $pvk_id = $row_expert_avg_rating['pvk_id'];
+                  $experts_query = "SELECT u.username, r.rating FROM ratings r JOIN users u ON r.user_id = u.id WHERE r.profession_id = $profession_id AND r.pvk_id = $pvk_id AND u.role = 'expert'";
+                  $experts_result = $conn->query($experts_query);
+                  if ($experts_result->num_rows > 0) {
+                      while ($expert = $experts_result->fetch_assoc()) {
+                          echo '<div style=\'color:#fff; margin-left:1em;\'><b style=\'color:#8ecfff;\'>' . htmlspecialchars($expert['username']) . '</b>: ' . $expert['rating'] . '</div>';
+                      }
+                  } else {
+                      echo '<div style=\'color:#888; margin-left:1em;\'>Нет данных</div>';
+                  }
+                  ?>
+                </details>
             <?php endwhile; ?>
-       
+            <?php if (!$has_expert): ?>
+                <div style="color:#888; margin-bottom:12px;">Нет оценок от экспертов</div>
+            <?php endif; ?>
 
             <?php
             // Если пользователь гость, показываем только его оценки
             if (!isset($_SESSION['user_id'])): ?>
                 <?php if (isset($_SESSION['guest_ratings'][$profession_id])): ?>
-                    <h4>Ваша оценка:</h4>
+                    <div class="block-title">Ваша оценка</div>
                     <?php foreach ($_SESSION['guest_ratings'][$profession_id] as $pvk_id => $rating): ?>
                         <?php if ($rating > 0): ?>
                             <?php
                             // Получаем имя ПВК по его ID
                             $query_pvk_name = "SELECT name FROM pvk WHERE id = $pvk_id";
-                            $result_pvk_name = $mysqli->query($query_pvk_name);
+                            $result_pvk_name = $conn->query($query_pvk_name);
                             $pvk_name = $result_pvk_name->fetch_assoc()['name'];
                             ?>
                             <div class="pvk">
                                 <span><?php echo $pvk_name; ?></span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-bar-inner" style="width: <?php echo ($rating * 10); ?>%;"></div>
+                                <div class="progress-bar-inner" style="width: <?php echo ($rating * 10); ?>%; background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);"></div>
                             </div>
                             <span class="progress-label"><?php echo $rating; ?></span>
                         <?php endif; ?>
@@ -96,16 +114,15 @@ $result_professions = $mysqli->query($query_professions);
                                       LEFT JOIN pvk ON ratings.pvk_id = pvk.id
                                       WHERE ratings.profession_id = $profession_id
                                       AND ratings.user_id = $user_id";
-                $result_user_rating = $mysqli->query($query_user_rating);
-
+                $result_user_rating = $conn->query($query_user_rating);
                 if ($result_user_rating->num_rows > 0): ?>
-                    <h4>Ваша оценка:</h4>
+                    <div class="block-title">Ваша оценка</div>
                     <?php while ($row_user_rating = $result_user_rating->fetch_assoc()): ?>
                         <div class="pvk">
                             <span><?php echo $row_user_rating['name']; ?></span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-bar-inner" style="width: <?php echo ($row_user_rating['rating'] * 10); ?>%;"></div>
+                            <div class="progress-bar-inner" style="width: <?php echo ($row_user_rating['rating'] * 10); ?>%; background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);"></div>
                         </div>
                         <span class="progress-label"><?php echo $row_user_rating['rating']; ?></span>
                     <?php endwhile; ?>
@@ -118,5 +135,5 @@ $result_professions = $mysqli->query($query_professions);
 
 <?php
 // Закрытие соединения с базой данных
-$mysqli->close();
+$conn->close();
 ?>

@@ -1,61 +1,93 @@
 body {
-    font-family: Arial, sans-serif;
+    background: #181a1b;
+    color: #f1f1f1;
+    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f2f2f2;
 }
-
+header {
+    background: #23272a;
+    padding: 16px 0 8px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+header a {
+    color: #61dafb;
+    text-decoration: none;
+    margin-right: 24px;
+    font-weight: 500;
+}
+h2 {
+    margin-left: 32px;
+    margin-bottom: 8px;
+}
+p {
+    margin-left: 32px;
+    margin-bottom: 24px;
+}
 .profession {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
+    background: #23272a;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    margin: 32px auto;
+    padding: 32px 32px 24px 32px;
+    max-width: 600px;
+    min-width: 320px;
+    transition: box-shadow 0.2s;
 }
-
+.profession:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
 .profession h3 {
     margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.5em;
+    color: #61dafb;
 }
-
+.profession p {
+    color: #b0b0b0;
+    margin-bottom: 18px;
+}
+.block-title {
+    font-weight: 600;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    color: #f1c40f;
+    font-size: 1.1em;
+}
 .pvk {
-    display: flex; /* Изменено */
-    justify-content: space-between; /* Изменено */
+    display: flex;
     align-items: center;
-    margin-bottom: 15px;
-    margin-top: 15px;
+    margin-bottom: 6px;
+    font-size: 1em;
 }
-
-.pvk-name {
-    margin-right: 10px;
-}
-
 .progress-bar {
-    background-color: #007bff;
-    border-radius: 5px;
-    height: 20px;
-    width: 400px;
-    /* margin-left: 20px; */
-    display: inline-block;
+    background: #353b48;
+    border-radius: 8px;
+    height: 18px;
+    width: 100%;
+    margin-bottom: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
-
 .progress-bar-inner {
-    background-color: #28a745;
-    width: 0;
     height: 100%;
-    border-radius: 5px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #21d397 0%, #38a1db 100%);
+    transition: width 0.5s;
 }
-
 .progress-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-    /* margin-left: 5px; */
+    font-size: 0.98em;
+    color: #f1c40f;
+    margin-left: 8px;
+    font-weight: 500;
 }
-
-.expert-name {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.user-rating {
-    display: flex; /* Добавлено */
-    align-items: center; /* Добавлено */
+@media (max-width: 700px) {
+    .profession {
+        padding: 18px 8px 16px 8px;
+        max-width: 98vw;
+    }
+    h2, p {
+        margin-left: 8px;
+    }
 }

@@ -32,7 +32,7 @@ if ($user_role === 'consultant') {
 
 // Для консультанта: выбираем активного пользователя из списка
 if ($user_role === 'consultant') {
-    $active_chat_user = isset($_GET['user_id']) ? intval($_GET['user_id']) : ($users_list[0]['id'] ?? null);
+$active_chat_user = isset($_GET['user_id']) ? intval($_GET['user_id']) : ($users_list[0]['id'] ?? null);
 } elseif ($user_role === 'expert') {
     // Для эксперта: всегда чат только с консультантом
     $active_chat_user = $consultant_id;
@@ -161,24 +161,7 @@ $messages_result = $stmt->get_result();
                 <div class="loading-indicator" style="display: none;">
                     <div class="spinner"></div>
                 </div>
-                <?php while ($message = $messages_result->fetch_assoc()): ?>
-                    <div class="message <?php echo $message['sender_id'] == $user_id ? 'sent' : 'received'; ?>">
-                        <div class="message-content">
-                            <div class="message-header">
-                                <span class="sender">
-                                    <?php 
-                                    echo htmlspecialchars($message['sender_name']);
-                                    if ($message['sender_role'] === 'expert') {
-                                        echo ' (Консультант)';
-                                    }
-                                    ?>
-                                </span>
-                                <span class="time"><?php echo date('H:i', strtotime($message['created_at'])); ?></span>
-                            </div>
-                            <p><?php echo htmlspecialchars($message['message']); ?></p>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
+                <!-- Сообщения будут подгружаться через JS -->
             </div>
 
             <div class="chat-input">
