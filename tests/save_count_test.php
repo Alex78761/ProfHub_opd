@@ -2,11 +2,11 @@
 session_start();
 
 // Подключение к базе данных
-require_once "../db_connect.php";
+require_once "../db-connect.php";
 
 // Проверяем, была ли отправлена форма для сохранения результатов теста
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
-    // Получаем среднее время реакций из POST-данных
+    // Получаем среднее время реакции из POST-данных
     $avgReactionTime = $_POST['avgReactionTime'];
 
     // Проверяем, авторизован ли пользователь
@@ -14,39 +14,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
         // Получаем user_id из сессии
         $user_id = $_SESSION['user_id'];
 
-        // Устанавливаем test_type и test_name
-        $test_type = "Оценка сложных сенсомоторных реакций человека";
-        $test_name = "оценка скорости реакции на сложение в уме (чет/нечет) - визуально";
-
-        // Получаем test_id по test_type и test_name из таблицы tests
-        $stmt_test_id = $mysqli->prepare("SELECT id FROM tests WHERE test_type = ? AND test_name = ?");
-        $stmt_test_id->bind_param("ss", $test_type, $test_name);
+        // Получаем test_id и test_name по file_path из таблицы tests
+        $file_path = 'audio_count_test.php';
+        $stmt_test_id = $conn->prepare("SELECT id, test_name FROM tests WHERE file_path = ? ORDER BY id ASC LIMIT 1");
+        $stmt_test_id->bind_param("s", $file_path);
         $stmt_test_id->execute();
         $result_test_id = $stmt_test_id->get_result();
 
         if ($result_test_id->num_rows == 1) {
             $row_test_id = $result_test_id->fetch_assoc();
             $test_id = $row_test_id['id'];
+            $test_name = $row_test_id['test_name'];
 
             // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $mysqli->prepare("INSERT INTO test_results (user_id, test_id, result) VALUES (?, ?, ?)");
-            $stmt->bind_param("idd", $user_id, $test_id, $avgReactionTime); // 'idd' представляет собой типы данных: integer, integer, double/float
+            $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+            $result_value = floatval($avgReactionTime); // Преобразуем в число
+            $stmt->bind_param("iiss", $user_id, $test_id, $test_name, $result_value);
+            
             if ($stmt->execute()) {
                 echo "Результаты успешно сохранены";
             } else {
-                echo "Ошибка при сохранении результатов: " . $mysqli->error;
+                echo "Ошибка при сохранении результатов: " . $conn->error;
             }
-            $stmt->close(); // Закрытие подготовленного запроса
+            $stmt->close();
         } else {
             echo "Ошибка при получении идентификатора теста";
         }
-        $stmt_test_id->close(); // Закрытие подготовленного запроса для получения test_id
+        $stmt_test_id->close();
     } else {
         // Пользователь не авторизован, сохраняем данные в сессию
-        $_SESSION['guest_avg_reaction_time_color'] = $avgReactionTime;
-        echo "Результаты успешно сохранены в сессии";
+        $_SESSION['guest_results']['audio_count_test'] = $avgReactionTime . ' сек.';
+        echo "Результаты сохранены для гостя";
     }
 } else {
-    echo "Нет данных о реакционном времени";
+    echo "Нет данных о времени реакции";
 }
 ?>

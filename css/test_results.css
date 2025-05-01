@@ -1,0 +1,267 @@
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1a1c20 0%, #0f1012 100%);
+    color: #e1e1e1;
+    min-height: 100vh;
+}
+
+.results-container {
+    padding: 80px 20px 40px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    color: #e1e1e1;
+}
+
+.header-section {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    text-align: center;
+}
+
+.header-section h1 {
+    font-size: 2.5em;
+    color: #3498db;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.header-section p {
+    font-size: 1.1em;
+    color: #888;
+    margin: 0;
+}
+
+.charts-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.charts-title {
+    color: #3498db;
+    font-size: 1.8em;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.charts-grid {
+    display: grid;
+    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.chart-type-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-type-container h3 {
+    color: #3498db;
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.chart-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-container:last-child {
+    margin-bottom: 0;
+}
+
+.results-table-container {
+    max-width: 1200px;
+    margin: 0 auto 60px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-table-container h2 {
+    color: #3498db;
+    font-size: 1.8em;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.results-table th,
+.results-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-table th {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.results-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.test-score {
+    font-weight: 500;
+}
+
+.test-score.low {
+    color: #e74c3c;
+}
+
+.test-score.medium {
+    color: #f39c12;
+}
+
+.test-score:not(.low):not(.medium) {
+    color: #2ecc71;
+}
+
+/* Стили для пустых данных */
+.no-data {
+    text-align: center;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    color: #888;
+    font-size: 1.1em;
+}
+
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.progress-bar {
+    flex-grow: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-value {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    transition: width 0.3s ease;
+}
+
+/* Стили для подсказок на графиках */
+.google-visualization-tooltip {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    color: #fff !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    max-width: 200px !important;
+    white-space: nowrap !important;
+}
+
+/* Стили для оверлея графика при наведении */
+.chart-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.03);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.chart-container:hover .chart-overlay {
+    opacity: 1;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .results-container {
+        padding: 60px 15px 30px;
+    }
+
+    .header-section h1 {
+        font-size: 2em;
+    }
+
+    .results-table-container,
+    .chart-type-container {
+        padding: 20px;
+    }
+
+    .results-table th,
+    .results-table td {
+        padding: 12px;
+        font-size: 0.9em;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.results-table-container,
+.chart-type-container {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.debug-info {
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.debug-info h4 {
+    color: #3498db;
+    margin: 0 0 15px;
+}
+
+.debug-info pre {
+    margin: 0;
+    white-space: pre-wrap;
+    color: #888;
+    font-family: 'Consolas', monospace;
+} 

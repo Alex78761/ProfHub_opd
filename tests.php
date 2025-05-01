@@ -93,7 +93,7 @@ if ($result_professions) {
 function getTestType($filename) {
     $types = [
         'simple_color_test' => 'Сенсомоторные реакции',
-        'sound_reaction_test' => 'Сенсомоторные реакции',
+        'tests/sound_reaction_test_interface.php' => 'Сенсомоторные реакции',
         'advanced_color_test' => 'Сенсомоторные реакции',
         'audio_count_test' => 'Сенсомоторные реакции',
         'visual_count_test' => 'Сенсомоторные реакции',
@@ -122,7 +122,7 @@ function getTestType($filename) {
 function getTestName($filename) {
     $names = [
         'simple_color_test.php' => 'Тест на простую зрительную реакцию',
-        'sound_reaction_test.php' => 'Тест на простую слуховую реакцию',
+        'tests/sound_reaction_test_interface.php' => 'Тест на простую слуховую реакцию',
         'advanced_color_test.php' => 'Тест на сложную цветовую реакцию',
         'audio_count_test.php' => 'Тест на сложную слуховую реакцию (чет/нечет)',
         'visual_count_test.php' => 'Тест на сложную зрительную реакцию (чет/нечет)',
@@ -206,6 +206,12 @@ $tests['Слежение'][] = [
 $tests['Слежение'][] = [
     'name' => 'Тест на преследование движущегося объекта',
     'file' => 'chaseTest.php'
+];
+
+// Добавляю тест на звуковую реакцию в раздел 'Сенсомоторные реакции'
+$tests['Сенсомоторные реакции'][] = [
+    'name' => 'Тест на простую слуховую реакцию',
+    'file' => 'sound_reaction_test_interface.php'
 ];
 
 // Сортируем категории и тесты по алфавиту

@@ -1,0 +1,643 @@
+2025-04-30 00:33:47 - GET
+POST: Array
+(
+)
+
+Headers: Array
+(
+    [Host] => localhost:8000
+    [Connection] => keep-alive
+    [Cache-Control] => max-age=0
+    [sec-ch-ua] => "Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"
+    [sec-ch-ua-mobile] => ?0
+    [sec-ch-ua-platform] => "macOS"
+    [Upgrade-Insecure-Requests] => 1
+    [User-Agent] => Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+    [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+    [Sec-Fetch-Site] => same-origin
+    [Sec-Fetch-Mode] => navigate
+    [Sec-Fetch-User] => ?1
+    [Sec-Fetch-Dest] => document
+    [Referer] => http://localhost:8000/tests.php
+    [Accept-Encoding] => gzip, deflate, br, zstd
+    [Accept-Language] => ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+    [Cookie] => Idea-c4097a12=f8b9296f-cd20-4b23-88fc-c5c79d8044c3; Webstorm-592dfcd9=1bce83e2-a2cc-445f-a7fc-30cc5547aa41; Phpstorm-635d9835=93549ce0-a001-4691-bbb1-c260c57bb97f; Idea-ddb0e7f4=ffb61576-1f11-4a16-892d-e1f71887cc85; PHPSESSID=cfb10015f993a6d07bc73648e20159c9
+)
+
+
+2025-04-30 08:21:58 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 08:29:44 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:39:53 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:39:54 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:39:55 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:39:56 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:40:31 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:40:31 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:40:32 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:40:32 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 09:41:57 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 10:12:10 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.0877
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 10:23:18 - Request: Array
+(
+    [method] => GET
+    [post] => Array
+        (
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 10:23:58 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.11140000000000001
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-04-30 10:26:52 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.11330000000000003
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+            [guest_results] => Array
+                (
+                    [sound_test] => 0.1114
+                )
+
+        )
+
+)
+
+2025-04-30 10:29:21 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.08020000000000001
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+            [guest_results] => Array
+                (
+                    [sound_test] => 0.1133
+                )
+
+        )
+
+)
+
+2025-04-30 15:02:11 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.3843
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 10:53:27 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.4915000000000001
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 14:58:22 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.16760000000000003
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 16:22:09 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.15799999999999997
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 17:32:26 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 381.2241818181819
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 17:33:04 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.21739999999999998
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 17:42:40 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.13130000000000003
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 17:54:18 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.0766
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:19:25 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.1908
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:24:28 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.0769
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:48:19 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.07830000000000001
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:52:07 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.2367
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:53:35 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.0888
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:55:03 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.49429999999999996
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+)
+
+2025-05-01 21:56:33 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.2969
+        )
+
+    [session] => Array
+        (
+            [user_id] => 21
+            [username] => user
+            [role] => respondent
+        )
+
+    [server] => Array
+        (
+            [DOCUMENT_ROOT] => /Users/nigmatcanov/Desktop/opdlab
+            [REMOTE_ADDR] => ::1
+            [REMOTE_PORT] => 64256
+            [SERVER_SOFTWARE] => PHP/8.4.5 (Development Server)
+            [SERVER_PROTOCOL] => HTTP/1.1
+            [SERVER_NAME] => localhost
+            [SERVER_PORT] => 8000
+            [REQUEST_URI] => /tests/sound_reaction_test.php
+            [REQUEST_METHOD] => POST
+            [SCRIPT_NAME] => /tests/sound_reaction_test.php
+            [SCRIPT_FILENAME] => /Users/nigmatcanov/Desktop/opdlab/tests/sound_reaction_test.php
+            [PHP_SELF] => /tests/sound_reaction_test.php
+            [HTTP_HOST] => localhost:8000
+            [HTTP_CONNECTION] => keep-alive
+            [CONTENT_LENGTH] => 22
+            [HTTP_CONTENT_LENGTH] => 22
+            [HTTP_SEC_CH_UA_PLATFORM] => "macOS"
+            [HTTP_USER_AGENT] => Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+            [HTTP_SEC_CH_UA] => "Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"
+            [CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_SEC_CH_UA_MOBILE] => ?0
+            [HTTP_ACCEPT] => */*
+            [HTTP_ORIGIN] => http://localhost:8000
+            [HTTP_SEC_FETCH_SITE] => same-origin
+            [HTTP_SEC_FETCH_MODE] => cors
+            [HTTP_SEC_FETCH_DEST] => empty
+            [HTTP_REFERER] => http://localhost:8000/tests/sound_reaction_test_interface.php
+            [HTTP_ACCEPT_ENCODING] => gzip, deflate, br, zstd
+            [HTTP_ACCEPT_LANGUAGE] => ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+            [HTTP_COOKIE] => Idea-c4097a12=f8b9296f-cd20-4b23-88fc-c5c79d8044c3; Webstorm-592dfcd9=1bce83e2-a2cc-445f-a7fc-30cc5547aa41; Phpstorm-635d9835=93549ce0-a001-4691-bbb1-c260c57bb97f; Idea-ddb0e7f4=ffb61576-1f11-4a16-892d-e1f71887cc85; PHPSESSID=cfb10015f993a6d07bc73648e20159c9
+            [REQUEST_TIME_FLOAT] => 1746136593.3075
+            [REQUEST_TIME] => 1746136593
+        )
+
+)
+
+2025-05-01 21:57:57 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.16060000000000002
+        )
+
+    [session] => Array
+        (
+            [user_id] => 23
+            [username] => user2
+            [role] => user
+        )
+
+    [server] => Array
+        (
+            [DOCUMENT_ROOT] => /Users/nigmatcanov/Desktop/opdlab
+            [REMOTE_ADDR] => ::1
+            [REMOTE_PORT] => 64664
+            [SERVER_SOFTWARE] => PHP/8.4.5 (Development Server)
+            [SERVER_PROTOCOL] => HTTP/1.1
+            [SERVER_NAME] => localhost
+            [SERVER_PORT] => 8000
+            [REQUEST_URI] => /tests/sound_reaction_test.php
+            [REQUEST_METHOD] => POST
+            [SCRIPT_NAME] => /tests/sound_reaction_test.php
+            [SCRIPT_FILENAME] => /Users/nigmatcanov/Desktop/opdlab/tests/sound_reaction_test.php
+            [PHP_SELF] => /tests/sound_reaction_test.php
+            [HTTP_HOST] => localhost:8000
+            [HTTP_CONNECTION] => keep-alive
+            [CONTENT_LENGTH] => 35
+            [HTTP_CONTENT_LENGTH] => 35
+            [HTTP_SEC_CH_UA_PLATFORM] => "macOS"
+            [HTTP_USER_AGENT] => Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+            [HTTP_SEC_CH_UA] => "Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"
+            [CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_SEC_CH_UA_MOBILE] => ?0
+            [HTTP_ACCEPT] => */*
+            [HTTP_ORIGIN] => http://localhost:8000
+            [HTTP_SEC_FETCH_SITE] => same-origin
+            [HTTP_SEC_FETCH_MODE] => cors
+            [HTTP_SEC_FETCH_DEST] => empty
+            [HTTP_REFERER] => http://localhost:8000/tests/sound_reaction_test_interface.php
+            [HTTP_ACCEPT_ENCODING] => gzip, deflate, br, zstd
+            [HTTP_ACCEPT_LANGUAGE] => ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+            [HTTP_COOKIE] => Idea-c4097a12=f8b9296f-cd20-4b23-88fc-c5c79d8044c3; Webstorm-592dfcd9=1bce83e2-a2cc-445f-a7fc-30cc5547aa41; Phpstorm-635d9835=93549ce0-a001-4691-bbb1-c260c57bb97f; Idea-ddb0e7f4=ffb61576-1f11-4a16-892d-e1f71887cc85; PHPSESSID=cfb10015f993a6d07bc73648e20159c9
+            [REQUEST_TIME_FLOAT] => 1746136677.8805
+            [REQUEST_TIME] => 1746136677
+        )
+
+)
+

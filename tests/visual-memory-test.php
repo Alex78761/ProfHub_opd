@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $test_id = $row['id'];
-        $test_name = 'зрительная';
 
         // Сохранение результата в test_results
+        $test_name = 'зрительная';
         $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iisd", $user_id, $test_id, $test_name, $finalResult);
 

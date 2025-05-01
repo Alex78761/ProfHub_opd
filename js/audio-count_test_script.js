@@ -28,7 +28,6 @@ function generateQuestions() {
 }
 
 // Функция для начала теста
-// Функция для начала теста
 function startTest() {
     startButton.style.display = 'none';
     cancelButton.style.display = 'inline-block';
@@ -38,18 +37,14 @@ function startTest() {
     averageReactionTimeDisplay.style.display = 'block';
     currentReactionTimeDisplay.style.display = 'block';
     timerDisplay.style.display = 'block';
-    questionsRemaining = 10; // Устанавливаем общее количество вопросов
-    updateQuestionsRemaining(); // Обновляем отображение оставшихся примеров
-
-    // Генерируем вопросы
+    questionsRemaining = 10;
+    reactionTimes = [];
+    updateQuestionsRemaining();
     generateQuestions();
-
-    // Показываем вопросы
     speakNextQuestion();
-    countdown = setInterval(speakNextQuestion, 6000); // Установка интервала в 6 секунд
+    countdown = setInterval(speakNextQuestion, 6000);
 }
 
-// Функция для озвучивания следующего вопроса
 // Функция для озвучивания следующего вопроса
 function speakNextQuestion() {
     if (questionsRemaining > 0) {
@@ -60,16 +55,11 @@ function speakNextQuestion() {
         const speechText = speakText(question, 0.05);
         currentSum = sum;
         isAnsweredCorrectly = false;
-        isReactionRecorded = false; // Обнуляем флаг при новом вопросе
+        isReactionRecorded = false;
         questionStartTime = Date.now();
 
-        // Слушаем событие окончания речи
         speechText.addEventListener('end', function() {
-            // Фиксируем реакцию только после окончания речи
-            const reactionTime = (Date.now() - questionStartTime) / 1000; // Время реакции в секундах
-            reactionTimes.push(reactionTime);
-            updateReactionTimeDisplays(reactionTime);
-            isReactionRecorded = true;
+            questionStartTime = Date.now(); // Начинаем отсчет после окончания речи
         });
 
         questionsRemaining--;
@@ -87,93 +77,113 @@ function speakText(text, volume) {
     speechText.volume = volume;
     speechText.lang = 'ru-RU';
     speechSynthesis.speak(speechText);
-    return speechText; // Возвращаем объект SpeechSynthesisUtterance
+    return speechText;
 }
 
-// Обработчики для кнопок
-evenButton.addEventListener('click', function() {
-    handleButtonClick(true);
-});
-
-oddButton.addEventListener('click', function() {
-    handleButtonClick(false);
-});
 // Функция для обработки нажатия кнопки
-
-// Функция для обработки нажатия кнопки
-let answeredSums = new Set(); // Множество для хранения уже отвеченных сумм
-
 function handleButtonClick(isEven) {
+    if (!isReactionRecorded && currentSum !== undefined) {
     const isSumEven = currentSum % 2 === 0;
     const isCorrect = (isEven && isSumEven) || (!isEven && !isSumEven);
     
-    // Проверяем, что реакция еще не была зафиксирована и ответ правильный
-    if (!isReactionRecorded && isCorrect) {
-        const reactionTime = (Date.now() - questionStartTime) / 1000; // Время реакции в секундах
+        if (isCorrect) {
+            const reactionTime = (Date.now() - questionStartTime) / 1000;
         reactionTimes.push(reactionTime);
-        updateReactionTimeDisplays(reactionTime); // Обновляем отображение времени реакции, передавая reactionTime
-        isReactionRecorded = true; // Фиксируем реакцию после правильного ответа
+            updateReactionTimeDisplays(reactionTime);
+            isReactionRecorded = true;
+            
+            if (reactionTimes.length === 10) {
+                saveAvgReactionTime();
+                endTest();
+            }
+        } else {
+            resultDisplay.textContent = 'Неправильно!';
+            resultDisplay.style.display = 'block';
+            setTimeout(() => {
+                resultDisplay.style.display = 'none';
+            }, 1000);
+        }
     }
-    
-    isAnsweredCorrectly = isCorrect; // Устанавливаем флаг правильного ответа
 }
 
+// Добавляем обработчики событий для кнопок
+startButton.addEventListener('click', startTest);
+cancelButton.addEventListener('click', cancelTest);
+evenButton.addEventListener('click', () => handleButtonClick(true));
+oddButton.addEventListener('click', () => handleButtonClick(false));
 
 // Функция для обновления оставшихся вопросов
 function updateQuestionsRemaining() {
-    timerDisplay.textContent = `Questions remaining: ${questionsRemaining}`;
+    timerDisplay.textContent = `Осталось вопросов: ${questionsRemaining}`;
 }
 
 // Функция для обновления отображения времени реакции
 function updateReactionTimeDisplays(reactionTime) {
-    // Отображаем текущее время реакции
-    currentReactionTimeDisplay.textContent = `Current Reaction Time: ${reactionTime !== null ? reactionTime.toFixed(2) : 'не было нажатия'}`;
+    currentReactionTimeDisplay.textContent = `Текущее время реакции: ${reactionTime.toFixed(2)} сек.`;
+    if (reactionTimes.length > 1) {
+        const previousTime = reactionTimes[reactionTimes.length - 2];
+        previousReactionTimeDisplay.textContent = `Предыдущее время реакции: ${previousTime.toFixed(2)} сек.`;
+    }
+    const avgTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+    averageReactionTimeDisplay.textContent = `Среднее время реакции: ${avgTime.toFixed(2)} сек.`;
 }
 
 // Функция для завершения теста
 function endTest() {
-    clearInterval(countdown); // Очищаем интервал
+    clearInterval(countdown);
     startButton.style.display = 'block';
     cancelButton.style.display = 'none';
-    startButton.style.margin = 'auto'; // Центрируем кнопку "Начать тест"
-    timerDisplay.style.display = 'none';
-    resultDisplay.style.display = 'none';
     buttonContainer.style.display = 'none';
-    previousReactionTimeDisplay.style.display = 'none';
+    timerDisplay.style.display = 'none';
     currentReactionTimeDisplay.style.display = 'none';
-    timerDisplay.display = 'none';
-    reactionTimes = []; // Очищаем массив времен реакции
-    questions = []; // Очищаем массив вопросов
-    questionsRemaining = 10; // Возвращаем общее количество вопросов к исходному значению
-    isAnsweredCorrectly = false; // Сбрасываем состояние ответа
+    previousReactionTimeDisplay.style.display = 'none';
+    averageReactionTimeDisplay.style.display = 'none';
+    
+    if (reactionTimes.length > 0) {
+        const avgTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+        resultDisplay.textContent = `Тест завершен! Среднее время реакции: ${avgTime.toFixed(2)} секунд`;
+        resultDisplay.style.display = 'block';
+    }
+    
+    reactionTimes = [];
+    questions = [];
+    questionsRemaining = 10;
+    isAnsweredCorrectly = false;
+    currentSum = undefined;
 }
 
 // Функция для сохранения среднего времени реакции
 function saveAvgReactionTime() {
+    if (reactionTimes.length > 0) {
     const averageReactionTime = reactionTimes.reduce((acc, val) => acc + val, 0) / reactionTimes.length;
-    const formData = new FormData();
-    formData.append('avgReactionTime', averageReactionTime); // Отправляем только среднее время реакции
+        
+        // Создаем объект с данными
+        const data = new URLSearchParams();
+        data.append('avgReactionTime', averageReactionTime);
 
     fetch('save_count_test.php', {
         method: 'POST',
-        body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.text();
-    })
+        .then(response => response.text())
     .then(data => {
-        console.log(data); // Журнал ответа сервера
+            console.log('Ответ сервера:', data);
+            resultDisplay.textContent = `Тест завершен! Среднее время реакции: ${averageReactionTime.toFixed(2)} секунд`;
+            resultDisplay.style.display = 'block';
     })
     .catch(error => {
-        console.error('Проблема с операцией fetch:', error);
+            console.error('Ошибка при сохранении результатов:', error);
+            resultDisplay.textContent = 'Произошла ошибка при сохранении результатов';
+            resultDisplay.style.display = 'block';
     });
+    }
 }
 
 // Функция для отмены теста
 function cancelTest() {
-    clearInterval(countdown); // Останавливаем интервал
-    endTest(); // Завершаем тест
+    clearInterval(countdown);
+    endTest();
 }

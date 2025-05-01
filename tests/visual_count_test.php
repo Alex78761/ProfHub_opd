@@ -43,6 +43,6 @@
 <br>
 <a href="../index.php">Домой</a>
 </div>
-<script src="../js/count_test_script.js"></script>
+<script src="../js/visual_count_test.js"></script>
 </body>
 </html>

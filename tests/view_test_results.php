@@ -59,7 +59,7 @@ if ($is_respondent) {
 // Если пользователь эксперт, выполняем запрос для извлечения результатов тестов для всех респондентов
 // Если пользователь респондент, выполняем запрос только для его результатов тестов
 if ($is_expert) {
-    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date, r.name AS respondent_name, r.age AS respondent_age
+    $query = "SELECT tr.user_id, tr.result, tr.test_date, t.test_type, t.test_name, r.name AS respondent_name, r.age AS respondent_age
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               INNER JOIN respondents r ON tr.user_id = r.user_id
@@ -68,7 +68,7 @@ if ($is_expert) {
               )
               ORDER BY r.name";
 } elseif ($is_respondent) {
-    $query = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date
+    $query = "SELECT tr.result, tr.test_date, t.test_type, t.test_name
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               WHERE tr.user_id = ?
@@ -162,6 +162,32 @@ foreach ($data as $row) {
     <?php endif; ?>
 </header>
 <div class="container">
+<?php if (!isset($_SESSION['user_id']) && isset($_SESSION['guest_results']) && !empty($_SESSION['guest_results'])): ?>
+    <h2>Ваши результаты (гость)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Название теста</th>
+                <th>Результат</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($_SESSION['guest_results'] as $test => $result): ?>
+            <tr>
+                <td><?= htmlspecialchars($test) ?></td>
+                <td><?= htmlspecialchars($result) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        <?php if (isset($_SESSION['guest_visual_count_test'])): ?>
+            <tr>
+                <td>Тест на скорость сложения в уме</td>
+                <td><?= htmlspecialchars($_SESSION['guest_visual_count_test']) ?> сек.</td>
+            </tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+
 <?php if ($is_expert && !empty($expert_respondent_data)): ?>
     <?php foreach ($expert_respondent_data as $respondent): ?>
         <?php
@@ -392,6 +418,36 @@ endforeach;
 
 <?php endforeach; ?>
 <?php endif; ?>
+
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawCharts);
+
+    function drawCharts() {
+        // Создаем данные для диаграммы прогресса
+        var progressData = new google.visualization.DataTable();
+        progressData.addColumn('string', 'Тест');
+        progressData.addColumn('number', 'Среднее время реакции (сек)');
+
+        <?php
+        foreach ($progress_data as $test) {
+            $avg_time = $test['total_time'] / $test['total_attempts'];
+            $test_name = str_replace('visual-count-test', 'Тест на скорость сложения в уме', $test['test_name']);
+            echo "progressData.addRow(['".addslashes($test_name)."', ".$avg_time."]);";
+        }
+        ?>
+
+        var options = {
+            title: 'Среднее время реакции по тестам',
+            hAxis: {title: 'Тест'},
+            vAxis: {title: 'Время (сек)'},
+            legend: 'none'
+        };
+
+        var chart = new google.visualization.ColumnChart(document.getElementById('progress_chart'));
+        chart.draw(progressData, options);
+    }
+</script>
 </div>
 </body>
 </html>

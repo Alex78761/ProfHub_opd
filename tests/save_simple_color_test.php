@@ -29,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
             $test_id = $row_test_id['id'];
 
             // Подготовка и выполнение запроса на вставку результатов теста в базу данных
-            $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result, score) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("iissd", $user_id, $test_id, $test_name, $res, $res);
+            $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iisd", $user_id, $test_id, $test_name, $res);
             if ($stmt->execute()) {
                 echo "Результаты успешно сохранены";
             } else {

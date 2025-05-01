@@ -80,30 +80,36 @@ function setRandomSound() {
 }
 
 function saveReactionTime(avgReactionTime) {
+    console.log('Sending avgTime:', avgReactionTime);
     const formData = new FormData();
-    formData.append('avgReactionTime', avgReactionTime.toString()); // Преобразуем число в строку
+    formData.append('avgReactionTime', avgReactionTime.toString());
 
-    fetch('save_sound_reaction_test.php', { // Исправляем путь к файлу
+    fetch('tests/save_sound_reaction_test.php', {
         method: 'POST',
         body: formData,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        credentials: 'same-origin' // Добавляем куки в запрос
     })
     .then(response => {
+        console.log('Response status:', response.status);
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            return response.text().then(text => {
+                console.error('Server response:', text);
+                throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+            });
         }
-        return response.text();
+        return response.json();
     })
     .then(data => {
-        console.log('Ответ сервера:', data); // Журнал ответа сервера
-        if (data.includes('успешно')) {
-            window.location.href = 'view_test_results.php'; // Перенаправляем на страницу результатов
+        console.log('Server response:', data);
+        if (data.status === 'success') {
+            window.location.href = 'view_test_results.php';
+        } else {
+            throw new Error(data.message || 'Неизвестная ошибка');
         }
     })
     .catch(error => {
-        console.error('Проблема с операцией fetch:', error);
+        console.error('Error saving results:', error);
+        alert('Произошла ошибка при сохранении результатов: ' + error.message);
     });
 }
 
