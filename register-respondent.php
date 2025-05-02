@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
             $stmt_assign_role->execute();
             $stmt_assign_role->close();
 
+            $_SESSION['role'] = 'respondent';
             header("Location: tests/tests.php");
             exit;
         } else {
@@ -52,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
             $stmt_assign_role->execute();
             $stmt_assign_role->close();
 
+            $_SESSION['role'] = 'respondent';
             $_SESSION['respondent_id'] = $respondent_id;
             header("Location: tests/tests.php");
             exit;

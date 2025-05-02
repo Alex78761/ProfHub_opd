@@ -53,8 +53,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("ss", $username, $hashed_password);
             
             if ($stmt->execute()) {
-                $_SESSION['success'] = "Регистрация успешна! Теперь вы можете войти.";
-                header("Location: login.php");
+                $new_user_id = $stmt->insert_id;
+                $_SESSION['user_id'] = $new_user_id;
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = 'user';
+                header("Location: index.php");
                 exit();
             } else {
                 $errors[] = "Ошибка при регистрации. Попробуйте позже.";

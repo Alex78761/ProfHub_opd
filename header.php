@@ -72,6 +72,9 @@ if (isset($_SESSION['user_id'])) {
                             <a class="dropdown-item" href="expert_panel.php">
                                 <i class="fas fa-edit"></i> Оценка профессий
                             </a>
+                            <a class="dropdown-item" href="expert_results.php">
+                                <i class="fas fa-chart-bar"></i> Аналитика тестов
+                            </a>
                             <div class="dropdown-divider"></div>
                         <?php endif; ?>
                         <div class="dropdown-divider"></div>

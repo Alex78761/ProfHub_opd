@@ -28,13 +28,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
             $row_test_id = $result_test_id->fetch_assoc();
             $test_id = $row_test_id['id'];
 
-            // Подготовка и выполнение запроса на вставку результатов теста в базу данных
+        // Подготовка и выполнение запроса на вставку результатов теста в базу данных
             $stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, test_name, result, score) VALUES (?, ?, ?, ?, ?)");
             $result_value = floatval($avgReactionTime); // Преобразуем в число
             $stmt->bind_param("iisdd", $user_id, $test_id, $test_name, $result_value, $result_value);
             
-            if ($stmt->execute()) {
-                echo "Результаты успешно сохранены";
+        if ($stmt->execute()) {
+            echo "Результаты успешно сохранены";
             } else {
                 echo "Ошибка при сохранении результатов: " . $conn->error;
             }

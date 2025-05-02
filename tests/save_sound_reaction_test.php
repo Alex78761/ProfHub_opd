@@ -20,13 +20,13 @@ error_log("Database connection: " . ($conn->connect_error ? "Error: " . $conn->c
 // Проверяем, была ли отправлена форма для сохранения результатов теста
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
     try {
-        // Получаем среднее время реакций из POST-данных
+    // Получаем среднее время реакций из POST-данных
         $avgReactionTime = floatval($_POST['avgReactionTime']);
         error_log("Processing avgReactionTime: " . $avgReactionTime);
 
-        // Проверяем, авторизован ли пользователь
-        if (isset($_SESSION['user_id'])) {
-            $user_id = $_SESSION['user_id'];
+    // Проверяем, авторизован ли пользователь
+    if (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
             error_log("User ID from session: " . $user_id);
 
             // Проверяем существование пользователя
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
 
             // Используем известный ID теста
             $test_id = 73;
-            $test_name = "реакция на звук";
+        $test_name = "реакция на звук";
 
             // Проверяем существование теста
             $check_test = $conn->prepare("SELECT id FROM tests WHERE id = ?");
@@ -87,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['avgReactionTime'])) {
             $stmt->close();
         } else {
             error_log("User not authenticated, saving to session");
-            $_SESSION['guest_avg_reaction_time_sound'] = $avgReactionTime;
+        $_SESSION['guest_avg_reaction_time_sound'] = $avgReactionTime;
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Результаты успешно сохранены в сессии'
