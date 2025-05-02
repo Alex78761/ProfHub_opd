@@ -17,7 +17,7 @@ if (isset($_SESSION['user_id'])) {
 }
 ?>
 
-<header class="header">
+    <header class="header">
     <div class="header-container">
         <!-- Логотип -->
         <a class="logo" href="index.php">ProfHub</a>
@@ -34,19 +34,19 @@ if (isset($_SESSION['user_id'])) {
                     <div class="dropdown-wrapper">
                         <button class="nav-link dropdown-btn<?php if(in_array(basename($_SERVER['PHP_SELF']), ['tests.php', 'test_results.php'])) echo ' active'; ?>">
                             Тесты <i class="fas fa-chevron-down dropdown-arrow"></i>
-                        </button>
+                </button>
                         <div class="dropdown-menu">
                             <a class="dropdown-item<?php if(basename($_SERVER['PHP_SELF'])=='tests.php') echo ' active'; ?>" href="tests.php">Пройти тест</a>
                             <a class="dropdown-item<?php if(basename($_SERVER['PHP_SELF'])=='test_results.php') echo ' active'; ?>" href="view_test_results.php">Результаты тестов</a>
                         </div>
                     </div>
-                </li>
-                <?php endif; ?>
+                            </li>
+                                    <?php endif; ?>
                 
                 <li class="nav-item">
                     <a class="nav-link<?php if(basename($_SERVER['PHP_SELF'])=='chat.php') echo ' active'; ?>" href="chat.php">Чат</a>
-                </li>
-            </ul>
+                            </li>
+                        </ul>
         </nav>
 
         <!-- Профиль/авторизация -->
@@ -57,26 +57,26 @@ if (isset($_SESSION['user_id'])) {
             <?php else: ?>
                 <div class="profile-dropdown">
                     <button class="profile-btn" id="profileDropdownBtn">
-                        <i class="fas fa-user-circle"></i>
+                                    <i class="fas fa-user-circle"></i>
                         <span>Мой профиль</span>
                         <i class="fas fa-chevron-down dropdown-arrow"></i>
                     </button>
                     <div class="dropdown-menu profile-menu" id="profileDropdown">
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                             <a class="dropdown-item" href="admin_professions.php">
                                 <i class="fas fa-edit"></i> Редактировать профессии
                             </a>
                             <div class="dropdown-divider"></div>
-                        <?php endif; ?>
+                                    <?php endif; ?>
                         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'expert'): ?>
                             <a class="dropdown-item" href="expert_panel.php">
                                 <i class="fas fa-edit"></i> Оценка профессий
-                            </a>
+                                </a>
                             <a class="dropdown-item" href="expert_results.php">
                                 <i class="fas fa-chart-bar"></i> Аналитика тестов
-                            </a>
+                                </a>
                             <div class="dropdown-divider"></div>
-                        <?php endif; ?>
+                    <?php endif; ?>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="logout.php">
                             <i class="fas fa-sign-out-alt"></i> Выйти
@@ -84,7 +84,7 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
             <?php endif; ?>
-        </div>
+            </div>
         
         <!-- Кнопка мобильного меню -->
         <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => console.error('Ошибка при получении непрочитанных сообщений:', error));
     }
-    
+
     setInterval(updateUnreadMessages, 30000);
     updateUnreadMessages();
     <?php endif; ?>

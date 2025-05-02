@@ -641,3 +641,57 @@ Headers: Array
 
 )
 
+2025-05-02 11:52:22 - Request: Array
+(
+    [method] => POST
+    [post] => Array
+        (
+            [avgReactionTime] => 0.3862
+        )
+
+    [session] => Array
+        (
+            [user_id] => 27
+            [username] => user_new
+            [role] => user
+        )
+
+    [server] => Array
+        (
+            [DOCUMENT_ROOT] => /Users/nigmatcanov/Desktop/opdlab
+            [REMOTE_ADDR] => ::1
+            [REMOTE_PORT] => 58168
+            [SERVER_SOFTWARE] => PHP/8.4.5 (Development Server)
+            [SERVER_PROTOCOL] => HTTP/1.1
+            [SERVER_NAME] => localhost
+            [SERVER_PORT] => 8000
+            [REQUEST_URI] => /tests/sound_reaction_test.php
+            [REQUEST_METHOD] => POST
+            [SCRIPT_NAME] => /tests/sound_reaction_test.php
+            [SCRIPT_FILENAME] => /Users/nigmatcanov/Desktop/opdlab/tests/sound_reaction_test.php
+            [PHP_SELF] => /tests/sound_reaction_test.php
+            [HTTP_HOST] => localhost:8000
+            [HTTP_CONNECTION] => keep-alive
+            [CONTENT_LENGTH] => 22
+            [HTTP_CONTENT_LENGTH] => 22
+            [HTTP_SEC_CH_UA_PLATFORM] => "macOS"
+            [HTTP_USER_AGENT] => Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+            [HTTP_SEC_CH_UA] => "Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"
+            [CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_CONTENT_TYPE] => application/x-www-form-urlencoded
+            [HTTP_SEC_CH_UA_MOBILE] => ?0
+            [HTTP_ACCEPT] => */*
+            [HTTP_ORIGIN] => http://localhost:8000
+            [HTTP_SEC_FETCH_SITE] => same-origin
+            [HTTP_SEC_FETCH_MODE] => cors
+            [HTTP_SEC_FETCH_DEST] => empty
+            [HTTP_REFERER] => http://localhost:8000/tests/sound_reaction_test_interface.php
+            [HTTP_ACCEPT_ENCODING] => gzip, deflate, br, zstd
+            [HTTP_ACCEPT_LANGUAGE] => ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+            [HTTP_COOKIE] => Idea-c4097a12=f8b9296f-cd20-4b23-88fc-c5c79d8044c3; Webstorm-592dfcd9=1bce83e2-a2cc-445f-a7fc-30cc5547aa41; Phpstorm-635d9835=93549ce0-a001-4691-bbb1-c260c57bb97f; Idea-ddb0e7f4=ffb61576-1f11-4a16-892d-e1f71887cc85; PHPSESSID=cfb10015f993a6d07bc73648e20159c9
+            [REQUEST_TIME_FLOAT] => 1746186742.457
+            [REQUEST_TIME] => 1746186742
+        )
+
+)
+
