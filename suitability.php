@@ -13,96 +13,105 @@ function get_pvk_name($mysqli, $pvk_id) {
 }
 
 function calculate_suitability($mysqli, $user_id, $profession_id) {
-    $test_sql = "SELECT t.id as test_id, ec.pvk_id FROM tests t
-                 JOIN evaluation_criteria ec ON t.id = ec.test_id
-                 WHERE ec.profession_id = $profession_id";
-    $test_result = $mysqli->query($test_sql);
-
-    $test_ids = [];
-    $pvk_map = [];
-    while ($row = $test_result->fetch_assoc()) {
-        $test_ids[] = $row['test_id'];
-        $pvk_map[$row['test_id']] = $row['pvk_id'];
+    // Получаем критерии для профессии
+    $criteria_sql = "SELECT * FROM evaluation_criteria WHERE profession_id = $profession_id";
+    $criteria_result = $mysqli->query($criteria_sql);
+    $criteria = [];
+    while ($row = $criteria_result->fetch_assoc()) {
+        $criteria[] = $row;
     }
 
-    if (empty($test_ids)) {
+    if (empty($criteria)) {
         return ["pvk_data" => [], "overall_score" => 0];
-    }
-
-    $test_ids_str = implode(',', $test_ids);
-
-    $sql = "SELECT test_id, result FROM test_results WHERE user_id = $user_id AND test_id IN ($test_ids_str)";
-    $result = $mysqli->query($sql);
-
-    $pvk_ratings = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $test_id = $row['test_id'];
-            $pvk_id = $pvk_map[$test_id];
-            $rating = $row['result'];
-
-            if (!isset($pvk_ratings[$pvk_id])) {
-                $pvk_ratings[$pvk_id] = [];
-            }
-            $pvk_ratings[$pvk_id][] = $rating;
-        }
     }
 
     $total_score = 0;
     $total_weight = 0;
     $pvk_data = [];
 
-    foreach ($pvk_ratings as $pvk_id => $ratings) {
-        $pvk_name = get_pvk_name($mysqli, $pvk_id);
+    foreach ($criteria as $crit) {
+        $crit_id = $crit['id'];
+        $crit_name = $crit['name'];
+        $crit_weight = isset($crit['weight']) ? $crit['weight'] : 1;
 
-        // Fetch weight and thresholds for the PVK
-        $weight_sql = "SELECT weight FROM weights WHERE pvk_id = $pvk_id";
-        $threshold_sql = "SELECT low_threshold, medium_threshold, high_threshold FROM thresholds WHERE pvk_id = $pvk_id";
-        $weight_result = $mysqli->query($weight_sql);
-        $threshold_result = $mysqli->query($threshold_sql);
-
-        if ($weight_result->num_rows > 0 && $threshold_result->num_rows > 0) {
-            $weight = $weight_result->fetch_assoc()['weight'];
-            $thresholds = $threshold_result->fetch_assoc();
-
-            $average_rating = array_sum($ratings) / count($ratings);
-            $weighted_rating = $average_rating * $weight;
-
-            if ($weighted_rating < $thresholds['low_threshold']) {
-                $rating_display = "-";
-                $rating_color_class = "low";
-            } elseif ($weighted_rating < $thresholds['medium_threshold']) {
-                $rating_display = round($weighted_rating, 2);
-                $rating_color_class = "medium";
-            } else {
-                $rating_display = round($weighted_rating, 2);
-                $rating_color_class = "high";
-            }
-
-            $pvk_data[] = [
-                "name" => $pvk_name,
-                "pvk_id" => $pvk_id,
-                "average_rating" => $rating_display,
-                "rating_color_class" => $rating_color_class
-            ];
-
-            if ($rating_display !== "-") {
-                $total_score += $weighted_rating;
-                $total_weight += $weight;
-            }
+        // Получаем связанные ПВК
+        $pvk_sql = "SELECT pvk_id FROM criteria_pvk WHERE criteria_id = $crit_id";
+        $pvk_result = $mysqli->query($pvk_sql);
+        $pvk_ids = [];
+        while ($row = $pvk_result->fetch_assoc()) {
+            $pvk_ids[] = $row['pvk_id'];
         }
-    }
 
+        // Получаем связанные тесты и параметры
+        $test_sql = "SELECT * FROM test_criteria WHERE criteria_name = '" . $mysqli->real_escape_string($crit_name) . "'";
+        $test_result = $mysqli->query($test_sql);
+        $tests = [];
+        while ($row = $test_result->fetch_assoc()) {
+            $tests[] = $row;
+        }
+
+        // Получаем результаты пользователя по этим тестам
+        $test_ids = array_column($tests, 'test_id');
+        if (empty($test_ids)) continue;
+        $test_ids_str = implode(',', $test_ids);
+        $results_sql = "SELECT test_id, result FROM test_results WHERE user_id = $user_id AND test_id IN ($test_ids_str)";
+        $results_result = $mysqli->query($results_sql);
+        $user_results = [];
+        while ($row = $results_result->fetch_assoc()) {
+            $user_results[$row['test_id']] = $row['result'];
+        }
+
+        $crit_score = 0;
+        $crit_weight_sum = 0;
+        $cutoff_failed = false;
+
+        foreach ($tests as $test) {
+            $test_id = $test['test_id'];
+            $weight = isset($test['weight']) ? $test['weight'] : 1;
+            $direction = isset($test['direction']) ? $test['direction'] : 'asc';
+            $cutoff = isset($test['cutoff']) ? $test['cutoff'] : null;
+            if (!isset($user_results[$test_id])) continue;
+            $value = floatval($user_results[$test_id]);
+            $score = $direction === 'desc' ? (100 - $value) : $value;
+            if ($cutoff !== null && $direction === 'desc' && $value > $cutoff) $cutoff_failed = true;
+            if ($cutoff !== null && $direction === 'asc' && $value < $cutoff) $cutoff_failed = true;
+            $crit_score += $score * $weight;
+            $crit_weight_sum += $weight;
+        }
+        if ($crit_weight_sum > 0) {
+            $crit_score = $crit_score / $crit_weight_sum;
+        } else {
+            $crit_score = 0;
+        }
+        if ($cutoff_failed) $crit_score = 0;
+        // Для вывода — берём название ПВК (если есть связь)
+        $pvk_name = '';
+        if (!empty($pvk_ids)) {
+            $pvk_id = $pvk_ids[0];
+            $pvk_name_sql = "SELECT name FROM pvk WHERE id = $pvk_id";
+            $pvk_name_result = $mysqli->query($pvk_name_sql);
+            if ($pvk_name_result->num_rows > 0) {
+                $pvk_name = $pvk_name_result->fetch_assoc()['name'];
+            } else {
+                $pvk_name = $crit_name;
+            }
+        } else {
+            $pvk_name = $crit_name;
+        }
+        $rating_color_class = $crit_score < 40 ? 'low' : ($crit_score < 70 ? 'medium' : 'high');
+        $pvk_data[] = [
+            "name" => $pvk_name,
+            "pvk_id" => $pvk_ids[0] ?? null,
+            "average_rating" => round($crit_score, 2),
+            "rating_color_class" => $rating_color_class
+        ];
+        $total_score += $crit_score * $crit_weight;
+        $total_weight += $crit_weight;
+    }
     usort($pvk_data, function ($a, $b) {
         return $b['average_rating'] <=> $a['average_rating'];
     });
-
-    if ($total_weight > 0) {
-        $overall_score = round($total_score / $total_weight, 2);
-    } else {
-        $overall_score = 0;
-    }
-
+    $overall_score = $total_weight > 0 ? round($total_score / $total_weight, 2) : 0;
     return ["pvk_data" => $pvk_data, "overall_score" => $overall_score];
 }
 
