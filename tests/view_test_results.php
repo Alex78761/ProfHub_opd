@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../db-connect.php";
+require_once "../header.php";
 
 // Получаем user_id и роль из сессии
 $user_id = $_SESSION['user_id'];
@@ -12,7 +13,7 @@ if(isset($_SESSION['user_id'])){
 
     // Получаем информацию о пользователе
     $query_user = "SELECT username, role FROM users WHERE id = ?";
-    $statement = $mysqli->prepare($query_user);
+    $statement = $conn->prepare($query_user);
     $statement->bind_param("i", $user_id);
     $statement->execute();
     $result_user = $statement->get_result();
@@ -26,6 +27,11 @@ if(isset($_SESSION['user_id'])){
         $is_expert = $role === 'expert';
         // Проверяем, является ли пользователь респондентом
         $is_respondent = $role === 'respondent';
+        
+        // Отладочная информация
+        echo "User role: " . $role . "<br>";
+        echo "Is expert: " . ($is_expert ? 'true' : 'false') . "<br>";
+        echo "Is respondent: " . ($is_respondent ? 'true' : 'false') . "<br>";
     }
 }
 
@@ -33,7 +39,7 @@ if(isset($_SESSION['user_id'])){
 $expert_respondent_data = [];
 if ($is_expert) {
     $query_respondents = "SELECT name, age, user_id FROM respondents";
-    $result_respondents = $mysqli->query($query_respondents);
+    $result_respondents = $conn->query($query_respondents);
 
     // Получаем данные всех респондентов
     while ($row_respondent = $result_respondents->fetch_assoc()) {
@@ -45,7 +51,7 @@ if ($is_expert) {
 $respondent_data = [];
 if ($is_respondent) {
     $query_respondent = "SELECT name, age FROM respondents WHERE user_id = ?";
-    $stmt_respondent = $mysqli->prepare($query_respondent);
+    $stmt_respondent = $conn->prepare($query_respondent);
     $stmt_respondent->bind_param("i", $user_id);
     $stmt_respondent->execute();
     $result_respondent = $stmt_respondent->get_result();
@@ -59,7 +65,7 @@ if ($is_respondent) {
 // Если пользователь эксперт, выполняем запрос для извлечения результатов тестов для всех респондентов
 // Если пользователь респондент, выполняем запрос только для его результатов тестов
 if ($is_expert) {
-    $query = "SELECT tr.user_id, tr.result, tr.test_date, t.test_type, t.test_name, r.name AS respondent_name, r.age AS respondent_age
+    $query = "SELECT tr.user_id, tr.result, tr.created_at, t.test_type, t.test_name, r.name AS respondent_name, r.age AS respondent_age
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               INNER JOIN respondents r ON tr.user_id = r.user_id
@@ -68,14 +74,19 @@ if ($is_expert) {
               )
               ORDER BY r.name";
 } elseif ($is_respondent) {
-    $query = "SELECT tr.result, tr.test_date, t.test_type, t.test_name
+    $query = "SELECT tr.result, tr.created_at, t.test_type, t.test_name
               FROM test_results tr 
               INNER JOIN tests t ON tr.test_id = t.id 
               WHERE tr.user_id = ?
-              ORDER BY tr.test_date DESC";
+              ORDER BY tr.created_at DESC";
 }
 
-$stmt = $mysqli->prepare($query);
+// Проверяем, определена ли переменная $query
+if (!isset($query)) {
+    die("Ошибка: Не удалось определить тип пользователя или запрос не сформирован.");
+}
+
+$stmt = $conn->prepare($query);
 if ($is_respondent) {
     $stmt->bind_param("i", $user_id);
 }
@@ -193,7 +204,7 @@ foreach ($data as $row) {
         <?php
         // Получаем имя пользователя из таблицы пользователей
         $query_username = "SELECT username FROM users WHERE id = ?";
-        $stmt_username = $mysqli->prepare($query_username);
+        $stmt_username = $conn->prepare($query_username);
         $stmt_username->bind_param("i", $respondent['user_id']);
         $stmt_username->execute();
         $result_username = $stmt_username->get_result();
@@ -202,11 +213,11 @@ foreach ($data as $row) {
         $stmt_username->close();
 
         // Запрос для получения результатов тестов для данного респондента
-        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.test_date
+        $query_respondent_results = "SELECT tr.test_id, t.test_type, t.test_name, tr.result, tr.created_at
                                      FROM test_results tr 
                                      INNER JOIN tests t ON tr.test_id = t.id 
                                      WHERE tr.user_id = ?";
-        $stmt_respondent_results = $mysqli->prepare($query_respondent_results);
+        $stmt_respondent_results = $conn->prepare($query_respondent_results);
         $stmt_respondent_results->bind_param("i", $respondent['user_id']);
         $stmt_respondent_results->execute();
         $result_respondent_results = $stmt_respondent_results->get_result();
@@ -231,7 +242,7 @@ foreach ($data as $row) {
                     <td><?= $row_respondent_results['test_type'] ?></td>
                     <td><?= $row_respondent_results['test_name'] ?></td>
                     <td><?= $row_respondent_results['result'] ?></td>
-                    <td><?= $row_respondent_results['test_date'] ?></td>
+                    <td><?= $row_respondent_results['created_at'] ?></td>
                 </tr>
             <?php endwhile; ?>
             </tbody>
@@ -245,7 +256,7 @@ foreach ($data as $row) {
             // Если у теста есть результат, сохраняем его
             if ($row_respondent_results['result'] !== null) {
                 $test_results[$row_respondent_results['test_name']][] = array(
-                    'date' => $row_respondent_results['test_date'],
+                    'date' => $row_respondent_results['created_at'],
                     'result' => $row_respondent_results['result']
                 );
             }
@@ -320,7 +331,7 @@ foreach ($data as $row) {
             <td><?= $row['test_type'] ?></td>
             <td><?= $row['test_name'] ?></td>
             <td><?= $row['result'] ?></td>
-            <td><?= $row['test_date'] ?></td>
+            <td><?= $row['created_at'] ?></td>
         </tr>
     <?php endforeach; ?>
     </tbody>
@@ -379,7 +390,7 @@ foreach ($data as $row) {
                 foreach ($tests as $row):
                     if ($row['test_name'] === $test['test_name']):
                 ?>
-                        data.addRow(['<?= $row['test_date'] ?>', <?= $row['result'] ?>]);
+                        data.addRow(['<?= $row['created_at'] ?>', <?= $row['result'] ?>]);
                 <?php
                     endif;
                 endforeach;

@@ -2,9 +2,9 @@
 session_start();
 require_once "db-connect.php";
 
-function get_pvk_name($mysqli, $pvk_id) {
+function get_pvk_name($conn, $pvk_id) {
     $sql = "SELECT name FROM pvk WHERE id = $pvk_id";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
     if ($result->num_rows > 0) {
         return $result->fetch_assoc()['name'];
     } else {
@@ -12,10 +12,10 @@ function get_pvk_name($mysqli, $pvk_id) {
     }
 }
 
-function calculate_suitability($mysqli, $user_id, $profession_id) {
+function calculate_suitability($conn, $user_id, $profession_id) {
     // Получаем критерии для профессии
     $criteria_sql = "SELECT * FROM evaluation_criteria WHERE profession_id = $profession_id";
-    $criteria_result = $mysqli->query($criteria_sql);
+    $criteria_result = $conn->query($criteria_sql);
     $criteria = [];
     while ($row = $criteria_result->fetch_assoc()) {
         $criteria[] = $row;
@@ -36,15 +36,15 @@ function calculate_suitability($mysqli, $user_id, $profession_id) {
 
         // Получаем связанные ПВК
         $pvk_sql = "SELECT pvk_id FROM criteria_pvk WHERE criteria_id = $crit_id";
-        $pvk_result = $mysqli->query($pvk_sql);
+        $pvk_result = $conn->query($pvk_sql);
         $pvk_ids = [];
         while ($row = $pvk_result->fetch_assoc()) {
             $pvk_ids[] = $row['pvk_id'];
         }
 
         // Получаем связанные тесты и параметры
-        $test_sql = "SELECT * FROM test_criteria WHERE criteria_name = '" . $mysqli->real_escape_string($crit_name) . "'";
-        $test_result = $mysqli->query($test_sql);
+        $test_sql = "SELECT * FROM test_criteria WHERE criteria_name = '" . $conn->real_escape_string($crit_name) . "'";
+        $test_result = $conn->query($test_sql);
         $tests = [];
         while ($row = $test_result->fetch_assoc()) {
             $tests[] = $row;
@@ -55,7 +55,7 @@ function calculate_suitability($mysqli, $user_id, $profession_id) {
         if (empty($test_ids)) continue;
         $test_ids_str = implode(',', $test_ids);
         $results_sql = "SELECT test_id, result FROM test_results WHERE user_id = $user_id AND test_id IN ($test_ids_str)";
-        $results_result = $mysqli->query($results_sql);
+        $results_result = $conn->query($results_sql);
         $user_results = [];
         while ($row = $results_result->fetch_assoc()) {
             $user_results[$row['test_id']] = $row['result'];
@@ -67,14 +67,17 @@ function calculate_suitability($mysqli, $user_id, $profession_id) {
 
         foreach ($tests as $test) {
             $test_id = $test['test_id'];
-            $weight = isset($test['weight']) ? $test['weight'] : 1;
+            $weight = isset($test['weight']) ? floatval($test['weight']) : 1;
             $direction = isset($test['direction']) ? $test['direction'] : 'asc';
             $cutoff = isset($test['cutoff']) ? $test['cutoff'] : null;
             if (!isset($user_results[$test_id])) continue;
             $value = floatval($user_results[$test_id]);
-            $score = $direction === 'desc' ? (100 - $value) : $value;
-            if ($cutoff !== null && $direction === 'desc' && $value > $cutoff) $cutoff_failed = true;
-            if ($cutoff !== null && $direction === 'asc' && $value < $cutoff) $cutoff_failed = true;
+            $score = ($direction === 'desc') ? (100 - $value) : $value;
+            // Проверка порога (cutoff)
+            if ($cutoff !== null) {
+                if ($direction === 'desc' && $value > $cutoff) $cutoff_failed = true;
+                if ($direction === 'asc' && $value < $cutoff) $cutoff_failed = true;
+            }
             $crit_score += $score * $weight;
             $crit_weight_sum += $weight;
         }
@@ -89,7 +92,7 @@ function calculate_suitability($mysqli, $user_id, $profession_id) {
         if (!empty($pvk_ids)) {
             $pvk_id = $pvk_ids[0];
             $pvk_name_sql = "SELECT name FROM pvk WHERE id = $pvk_id";
-            $pvk_name_result = $mysqli->query($pvk_name_sql);
+            $pvk_name_result = $conn->query($pvk_name_sql);
             if ($pvk_name_result->num_rows > 0) {
                 $pvk_name = $pvk_name_result->fetch_assoc()['name'];
             } else {
@@ -123,7 +126,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 $sql = "SELECT role, respondent_id FROM users WHERE id = $user_id";
-$result = $mysqli->query($sql);
+$result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
@@ -136,7 +139,7 @@ if ($result->num_rows > 0) {
 $respondent_name = "";
 if ($role == 'respondent') {
     $sql = "SELECT name FROM respondents WHERE id = $respondent_id";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
         $respondent_name = $result->fetch_assoc()['name'];
@@ -145,31 +148,31 @@ if ($role == 'respondent') {
     }
 } elseif ($role == 'expert') {
     $sql = "SELECT id, name, gender, age FROM respondents";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
     $respondents = [];
     while ($row = $result->fetch_assoc()) {
         $respondents[$row['id']] = $row;
     }
 
     $sql = "SELECT name FROM experts WHERE id = (SELECT expert_id FROM users WHERE id = $user_id)";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
     if ($result->num_rows > 0) {
         $expert_name = $result->fetch_assoc()['name'];
     }
 }
 
 $professions = [
-    5 => 'DevOps-инженер',
-    6 => 'AR/VR-разработчик',
-    7 => 'UI/UX дизайнер'
+    1 => 'Аналитик',
+    10 => 'Frontend-разработчик',
+    11 => 'Backend-разработчик'
 ];
 
-function get_all_professions_suitability($mysqli, $user_id) {
+function get_all_professions_suitability($conn, $user_id) {
     global $professions;
     $profession_data = [];
 
     foreach ($professions as $profession_id => $profession_name) {
-        $suitability_data = calculate_suitability($mysqli, $user_id, $profession_id);
+        $suitability_data = calculate_suitability($conn, $user_id, $profession_id);
         $profession_data[] = [
             "name" => $profession_name,
             "overall_score" => $suitability_data['overall_score'],
@@ -209,554 +212,294 @@ $age_categories = get_age_categories($ages);
 <head>
     <meta charset="UTF-8">
     <title>Пригодность респондента</title>
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="../css/header.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 70px auto;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            background: #f4f8fb;
+            color: #222;
+        }
+        main.container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 0 60px 0;
+        }
+        .card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(52,152,219,0.07), 0 1.5px 6px rgba(0,0,0,0.03);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            margin-bottom: 2.5rem;
         }
         h1, h2, h3, h4 {
-            color: #333;
+            font-weight: 700;
+            color: #3498db;
+            margin-bottom: 1.2rem;
         }
+        h1 { font-size: 2.3rem; }
+        h2 { font-size: 1.7rem; }
+        h3 { font-size: 1.3rem; }
+        h4 { font-size: 1.1rem; }
         table {
-            width: 70%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        table, th, td {
-            border: 1px solid #ddd;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1.5rem;
+            background: #fafdff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(52,152,219,0.04);
         }
         th, td {
-            padding: 10px;
+            padding: 1rem 1.2rem;
             text-align: left;
         }
         th {
-            background-color: #f8f8f8;
+            background: #eaf6fb;
+            color: #3498db;
+            font-weight: 600;
+            border-bottom: 2px solid #d0e6f7;
         }
-        .low { background-color: #f8d7da; }
-        .medium { background-color: #fff3cd; }
-        .high { background-color: #d4edda; }
-        .select2-container {
-            width: 100% !important;
+        tr:not(:last-child) td {
+            border-bottom: 1px solid #f0f4f8;
         }
-        .comparison-container {
-            margin-top: 20px;
-        }
-        .chart-container {
-            position: relative;
-            margin-bottom: 20px;
-            width: 100%; /* Increased width for better visibility */
-            height: 400px; /* Increased height for better visibility */
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .dropdown-container {
-            margin-left: 20px;
-        }
-        .dropdown-btn {
-            cursor: pointer;
+        .rating-badge {
             display: inline-block;
-            padding: 10px;
-            background-color: #f8f8f8;
-            border: 1px solid #ddd;
-            width: 100%;
-            text-align: left;
+            min-width: 48px;
+            padding: 0.4em 0.9em;
+            border-radius: 1.2em;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-align: center;
+            background: #eaf6fb;
+            color: #3498db;
+            box-shadow: 0 1px 4px rgba(52,152,219,0.08);
         }
-        .filters {
-            display: flex;
-            gap: 20px;
-        }
-        .filters div {
-            flex: 1;
-        }
-        .filters label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        #view-results-btn {
-            display: block;
-            margin-top: 20px;
-        }
-        /* Стиль для контейнера селектора */
-        .select2-container--default .select2-selection--multiple {
-            background-color: #fff;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-            cursor: text;
-            padding: 5px;
-            position: relative;
-            height: auto;
-        }
-
-        /* Стиль для элементов списка */
-        .select2-container--default .select2-results__option {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-        /* Стиль для активных элементов списка */
-        .select2-container--default .select2-results__option[aria-selected=true] {
-            background-color: #f1f1f1;
-        }
-
-        /* Стиль для отмеченных элементов */
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            background-color: #e2e2e2;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-            margin: 4px 2px;
-            padding: 2px 5px;
-            font-size: 14px;
-        }
-
-        /* Стиль для удаления отмеченных элементов */
-        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-            color: #888;
-            cursor: pointer;
+        .rating-badge.low { background: #ffeaea; color: #e74c3c; }
+        .rating-badge.medium { background: #fffbe5; color: #f1c40f; }
+        .rating-badge.high { background: #eafbe7; color: #27ae60; }
+        .overall-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(90deg, #3498db 60%, #27ae60 100%);
+            border-radius: 1.2em;
+            padding: 0.5em 1.5em;
             display: inline-block;
-            font-weight: bold;
-            margin-right: 5px;
+            margin: 1.2em 0 0.5em 0;
+            box-shadow: 0 2px 8px rgba(52,152,219,0.10);
         }
-
-        /* Стиль для контейнера, когда активен */
-        .select2-container--default .select2-selection--multiple:focus {
-            border-color: #5b9dd9;
-            outline: 0;
+        .profession-block {
+            margin-bottom: 2.5rem;
         }
-
-        /* Стиль для подсказок и загрузки */
-        .select2-container--default .select2-search--dropdown .select2-search__field {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
+        .pvk-title {
+            font-weight: 600;
+            color: #222;
         }
-
-        .select2-container--default .select2-search--inline .select2-search__field {
-            width: auto;
-            padding: 5px;
-            margin: 2px;
-            box-sizing: border-box;
+        .pvk-table th, .pvk-table td {
+            padding: 0.8em 1em;
         }
-
-        /* Стиль для пустых опций */
-        .select2-container--default .select2-results__option[aria-selected] {
-            background-color: #f5f5f5;
+        .pvk-table th {
+            background: #f0f7fa;
         }
-
-        /* Стиль для выделенного элемента */
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #5897fb;
-            color: white;
+        .pvk-table tr:nth-child(even) td {
+            background: #f8fbfd;
         }
-
-        /* Стиль для состояния загрузки */
-        .select2-container--default .select2-results__option.loading-results {
-            padding: 10px;
+        .info-section {
+            background: #fafdff;
+            border-left: 5px solid #3498db;
+            padding: 1.5em 2em;
+            border-radius: 12px;
+            margin-bottom: 2.5rem;
+        }
+        .fa-info-circle {
+            color: #3498db;
+            margin-right: 0.5em;
+        }
+        @media (max-width: 900px) {
+            main.container { padding: 1rem; }
+            .card { padding: 1.2rem; }
+            th, td { padding: 0.7rem 0.5rem; }
         }
     </style>
 </head>
 <body>
-<header>
-<p><a href="tests/tests.php">Назад</a></p>
-    <p><a href="index.php">Домой</a></p>
-    <?php if (isset($_SESSION['username'])): ?>
-        <p><a href="account.php">Личный кабинет</a></p>
-    <?php endif; ?>
-</header>
-    <h1>Пригодность для различных профессий</h1>
-    <?php if ($role == 'respondent'): ?>
-        <h2>Респондент: <?php echo $respondent_name; ?></h2>
-        <?php
-        $profession_data = get_all_professions_suitability($mysqli, $user_id);
-        foreach ($profession_data as $profession):
-        ?>
-            <h3><?php echo $profession['name']; ?></h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Критерии личных качеств (ПВК)</th>
-                        <th>Рейтинг</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if (empty($profession['pvk_data'])) {
-                        echo "<tr><td colspan='2'>Ни один тест не пройден.</td></tr>";
-                    } else {
-                        foreach ($profession['pvk_data'] as $data) {
-                            $rating = $data['average_rating'];
-                            $rating_color_class = $data['rating_color_class'];
-
-                            echo "<tr>
-                                    <td>{$data['name']}</td>
-                                    <td class='$rating_color_class'>{$rating}</td>
-                                  </tr>";
-                        }
-                    }
-                    ?>
-                </tbody>
-            </table>
-            <h4>Общий показатель пригодности: <?php echo $profession['overall_score']; ?></h4>
-            <hr>
-        <?php endforeach; ?>
-    <?php elseif ($role == 'expert'): ?>
-        <h2>Эксперт: <?php echo $expert_name; ?></h2>
-        <?php
-        $profession_data = get_all_professions_suitability($mysqli, $user_id);
-        foreach ($profession_data as $profession):
-        ?>
-            <h3><?php echo $profession['name']; ?></h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Критерии личных качеств (ПВК)</th>
-                        <th>Рейтинг</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if (empty($profession['pvk_data'])) {
-                        echo "<tr><td colspan='2'>Ни один тест не пройден.</td></tr>";
-                    } else {
-                        foreach ($profession['pvk_data'] as $data) {
-                            $rating = $data['average_rating'];
-                            $rating_color_class = $data['rating_color_class'];
-
-                            echo "<tr>
-                                    <td>{$data['name']}</td>
-                                    <td class='$rating_color_class'>{$rating}</td>
-                                  </tr>";
-                        }
-                    }
-                    ?>
-                </tbody>
-            </table>
-            <h4>Общий показатель пригодности: <?php echo $profession['overall_score']; ?></h4>
-            <hr>
-        <?php endforeach; ?>
-
-        <h3>Результаты респондентов:</h3>
-        <form method="get" action="">
-            <div class="filters">
-                <div>
-                    <h4>Пол</h4>
-                    <label>
-                        <input type="checkbox" name="respondent_gender[]" value="Male"> Мужской
-                    </label>
-                    <label>
-                        <input type="checkbox" name="respondent_gender[]" value="Female"> Женский
-                    </label>
-                </div>
-                <div>
-                    <h4>Возраст</h4>
-                    <?php foreach ($age_categories as $category): ?>
-                        <label>
-                            <input type="checkbox" name="respondent_age[]" value="<?php echo $category; ?>"> <?php echo $category; ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <div id="respondent-select-container" style="display: none;">
-                <h4>Респонденты:</h4>
-                <select name="respondent_ids[]" id="respondent_select" class="select2" multiple>
-                    <?php foreach ($respondents as $id => $details): ?>
-                        <option value="<?php echo $id; ?>" data-gender="<?php echo $details['gender']; ?>" data-age="<?php echo $details['age']; ?>"><?php echo $details['name']; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <button type="submit" id="view-results-btn" style="display: none;">Выбрать</button>
-        </form>
-
-        <?php if (isset($_GET['respondent_ids']) && count($_GET['respondent_ids']) > 0): ?>
-            <?php
-            $selected_respondent_ids = $_GET['respondent_ids'];
-            $respondent_data = [];
-            foreach ($selected_respondent_ids as $selected_respondent_id) {
-                $sql = "SELECT name FROM respondents WHERE id = $selected_respondent_id";
-                $result = $mysqli->query($sql);
-                if ($result->num_rows > 0) {
-                    $selected_respondent_name = $result->fetch_assoc()['name'];
-                    $respondent_data[$selected_respondent_id] = ["name" => $selected_respondent_name, "professions" => []];
-                    foreach ($professions as $profession_id => $profession_name) {
-                        $suitability_data = calculate_suitability($mysqli, $selected_respondent_id, $profession_id);
-                        $respondent_data[$selected_respondent_id]["professions"][$profession_id] = $suitability_data;
-                    }
-                }
-            }
-            ?>
-
-            <?php if (count($selected_respondent_ids) > 1): ?>
-                <h3>Кому больше подходит профессия:</h3>
-                <?php foreach ($professions as $profession_id => $profession_name): ?>
-                    <?php
-                    $profession_suitability = [];
-                    foreach ($selected_respondent_ids as $selected_respondent_id) {
-                        $profession_suitability[] = [
-                            'respondent_name' => $respondent_data[$selected_respondent_id]['name'],
-                            'overall_score' => $respondent_data[$selected_respondent_id]['professions'][$profession_id]['overall_score']
-                        ];
-                    }
-
-                    usort($profession_suitability, function ($a, $b) {
-                        return $b['overall_score'] <=> $a['overall_score'];
-                    });
-                    ?>
-                    <h4><?php echo $profession_name; ?></h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Респондент</th>
-                                <th>Общий показатель пригодности</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($profession_suitability as $data): 
-                                $score = $data['overall_score'];
-                                if ($score < 0.3) {
-                                    $score_color_class = "low";
-                                } elseif ($score < 0.7) {
-                                    $score_color_class = "medium";
-                                } else {
-                                    $score_color_class = "high";
-                                }
-                            ?>
-                                <tr>
-                                    <td><?php echo $data['respondent_name']; ?></td>
-                                    <td class="<?php echo $score_color_class; ?>"><?php echo $score; ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endforeach; ?>
-            <?php endif; ?>
-
-            <?php foreach ($selected_respondent_ids as $selected_respondent_id): ?>
-                <h2>Респондент: <?php echo $respondent_data[$selected_respondent_id]['name']; ?></h2>
-                <?php foreach ($respondent_data[$selected_respondent_id]["professions"] as $profession_id => $data): ?>
-                    <h3><?php echo $professions[$profession_id]; ?></h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Критерии личных качеств (ПВК)</th>
-                                <th>Рейтинг</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            if (empty($data['pvk_data'])) {
-                                echo "<tr><td colspan='2'>Ни один тест не пройден.</td></tr>";
-                            } else {
-                                foreach ($data['pvk_data'] as $pvk_data) {
-                                    $rating = $pvk_data['average_rating'];
-                                    $rating_color_class = $pvk_data['rating_color_class'];
-
-                                    echo "<tr>
-                                            <td>{$pvk_data['name']}</td>
-                                            <td class='$rating_color_class'>{$rating}</td>
-                                          </tr>";
-                                }
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                    <h4>Общий показатель пригодности: <?php echo $data['overall_score']; ?></h4>
-                    <hr>
-                <?php endforeach; ?>
-            <?php endforeach; ?>
-
-            <?php if (count($selected_respondent_ids) > 1): ?>
-                <h3>Сравнение респондентов:</h3>
+<?php include 'header.php'; ?>
+<main class="container">
+<div class="info-section">
+  <i class="fa fa-info-circle"></i>
+  <b>Как работает система:</b> <br>
+  <ul style="margin-top:0.7em;">
+    <li>Проходите тесты — ваши результаты автоматически сохраняются.</li>
+    <li>Анализ пригодности — вы видите, насколько ваши качества соответствуют разным профессиям. Для каждой профессии учитываются важные критерии (ПВК), ваши тесты, веса. Всё рассчитывается автоматически и показывается в виде таблиц и графиков.</li>
+    <li>Анализ стресса — на отдельной странице можно видеть коэффициент стресса на основе биосигналов (пульса).</li>
+    <li>Личный кабинет — здесь вы можете посмотреть свою статистику, результаты тестов и биосигналов.</li>
+  </ul>
+</div>
+<h1>Пригодность для различных профессий</h1>
+<?php if ($role == 'respondent'): ?>
+    <h2>Респондент: <?php echo $respondent_name; ?></h2>
+    <?php
+    $profession_data = get_all_professions_suitability($conn, $user_id);
+    foreach ($profession_data as $profession):
+    ?>
+    <div class="card profession-block">
+        <h2><i class="fa fa-briefcase"></i> <?php echo $profession['name']; ?></h2>
+        <table class="pvk-table">
+            <thead>
+                <tr>
+                    <th>Критерии личных качеств (ПВК)</th>
+                    <th>Рейтинг</th>
+                </tr>
+            </thead>
+            <tbody>
                 <?php
-                foreach ($professions as $profession_id => $profession_name):
-                    $comparison_data = [];
-                    foreach ($selected_respondent_ids as $selected_respondent_id) {
-                        $suitability_data = calculate_suitability($mysqli, $selected_respondent_id, $profession_id);
-                        $comparison_data[] = [
-                            "respondent_id" => $selected_respondent_id,
-                            "respondent_name" => $respondent_data[$selected_respondent_id]['name'],
-                            "overall_score" => $suitability_data['overall_score'],
-                            "pvk_data" => $suitability_data['pvk_data']
-                        ];
+                if (empty($profession['pvk_data'])) {
+                    echo "<tr><td colspan='2'>Ни один тест не пройден.</td></tr>";
+                } else {
+                    foreach ($profession['pvk_data'] as $data) {
+                        $rating = $data['average_rating'];
+                        $rating_color_class = $data['rating_color_class'];
+                        echo "<tr>
+                                <td class='pvk-title'>{$data['name']}</td>
+                                <td><span class='rating-badge {$rating_color_class}'>".number_format($rating,2)."</span></td>
+                              </tr>";
                     }
+                }
+                ?>
+            </tbody>
+        </table>
+        <div class="overall-score"><i class="fa fa-star"></i> Общий показатель пригодности: <?php echo $profession['overall_score']; ?></div>
+    </div>
+    <?php endforeach; ?>
+<?php elseif ($role == 'expert'): ?>
+    <h2>Эксперт: <?php echo $expert_name; ?></h2>
+    <?php
+    $profession_data = get_all_professions_suitability($conn, $user_id);
+    foreach ($profession_data as $profession):
+    ?>
+    <div class="card profession-block">
+        <h2><i class="fa fa-briefcase"></i> <?php echo $profession['name']; ?></h2>
+        <table class="pvk-table">
+            <thead>
+                <tr>
+                    <th>Критерии личных качеств (ПВК)</th>
+                    <th>Рейтинг</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (empty($profession['pvk_data'])) {
+                    echo "<tr><td colspan='2'>Ни один тест не пройден.</td></tr>";
+                } else {
+                    foreach ($profession['pvk_data'] as $data) {
+                        $rating = $data['average_rating'];
+                        $rating_color_class = $data['rating_color_class'];
+                        echo "<tr>
+                                <td class='pvk-title'>{$data['name']}</td>
+                                <td><span class='rating-badge {$rating_color_class}'>".number_format($rating,2)."</span></td>
+                              </tr>";
+                    }
+                }
+                ?>
+            </tbody>
+        </table>
+        <div class="overall-score"><i class="fa fa-star"></i> Общий показатель пригодности: <?php echo $profession['overall_score']; ?></div>
+    </div>
+    <?php endforeach; ?>
+<?php endif; ?>
 
-                    usort($comparison_data, function ($a, $b) {
-                        return $b['overall_score'] <=> $a['overall_score'];
+<div class="card" style="margin:2rem 0; padding:2rem; background:#f8f8f8; border-radius:12px;">
+  <h2>Как вычисляются рейтинги и баллы</h2>
+  <ul>
+    <li><b>Рейтинг по каждому ПВК</b> — это средневзвешенное значение ваших результатов по тестам, которые связаны с этим ПВК для выбранной профессии. Если тестов несколько, их результаты усредняются с учётом веса.</li>
+    <li><b>Формула:</b> <br>
+      <code>Рейтинг ПВК = (результат_теста1 × вес1 + результат_теста2 × вес2 + ...) / (вес1 + вес2 + ...)</code>
+    </li>
+    <li><b>Общий показатель пригодности</b> — это средневзвешенное всех рейтингов ПВК для профессии с учётом их важности (веса):<br>
+      <code>Общий балл = (рейтинг_ПВК1 × вес1 + рейтинг_ПВК2 × вес2 + ...) / (вес1 + вес2 + ...)</code>
+    </li>
+    <li><b>Если по какому-то ПВК нет результата</b> — он не обнуляет общий балл, а просто не учитывается в среднем.</li>
+    <li><b>Используемые тесты для каждой профессии:</b></li>
+  </ul>
+  <ul>
+    <li><b>Аналитик:</b> Тест на анализ, тест на внимание, тест на креативность, тест на переключаемость, тест на зрительную память, тест на обобщение, тест на кратковременную память.</li>
+    <li><b>Frontend-разработчик:</b> Тест на креативность, тест на переключаемость, тест на зрительную память, тест на анализ, тест на кратковременную память, тест на обобщение.</li>
+    <li><b>Backend-разработчик:</b> Тест на переключаемость, тест на анализ, тест на обобщение, тест на креативность, тест на кратковременную память, тест на зрительную память.</li>
+  </ul>
+  <p>Если вы хотите узнать, какой тест влияет на конкретный ПВК — наведите курсор на название ПВК или обратитесь к администратору.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "Выберите",
+            allowClear: true
+        });
+
+        $('input[name="respondent_gender[]"], input[name="respondent_age[]"]').on('change', function() {
+            var genders = $('input[name="respondent_gender[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            var ages = $('input[name="respondent_age[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            if (genders.length > 0 || ages.length > 0) {
+                $('#respondent-select-container').show();
+            } else {
+                $('#respondent-select-container').hide();
+            }
+
+            $('#respondent_select option').each(function() {
+                var show = true;
+
+                if (genders.length > 0 && !genders.includes($(this).data('gender'))) {
+                    show = false;
+                }
+
+                if (ages.length > 0) {
+                    var ageRange = ages.map(function(age) {
+                        return age.split('-');
                     });
 
-                    // Collect PVK IDs that are common to two or more respondents
-                    $pvk_counts = [];
-                    foreach ($comparison_data as $data) {
-                        foreach ($data['pvk_data'] as $pvk) {
-                            if (!isset($pvk_counts[$pvk['pvk_id']])) {
-                                $pvk_counts[$pvk['pvk_id']] = 0;
-                            }
-                            $pvk_counts[$pvk['pvk_id']]++;
-                        }
-                    }
+                    var respondentAge = $(this).data('age');
+                    var inRange = ageRange.some(function(range) {
+                        return respondentAge >= range[0] && respondentAge <= range[1];
+                    });
 
-                    $common_pvk_ids = array_keys(array_filter($pvk_counts, function ($count) {
-                        return $count >= 2;
-                    }));
-
-                    // Prepare data for the chart
-                    $pvk_names = array_map(function ($pvk_id) use ($mysqli) {
-                        return get_pvk_name($mysqli, $pvk_id);
-                    }, $common_pvk_ids);
-
-                    $datasets = [];
-                    foreach ($comparison_data as $index => $data) {
-                        $ratings = [];
-                        foreach ($common_pvk_ids as $pvk_id) {
-                            $rating = 0;
-                            foreach ($data['pvk_data'] as $pvk) {
-                                if ($pvk['pvk_id'] == $pvk_id) {
-                                    $rating = $pvk['average_rating'];
-                                    break;
-                                }
-                            }
-                            $ratings[] = $rating;
-                        }
-
-                        $datasets[] = [
-                            "label" => $data['respondent_name'],
-                            "data" => $ratings,
-                            "backgroundColor" => "rgba(" . rand(0, 255) . "," . rand(0, 255) . "," . rand(0, 255) . ",0.8)",
-                            "borderColor" => "rgba(" . rand(0, 255) . "," . rand(0, 255) . "," . rand(0, 255) . ",1)",
-                            "borderWidth" => 1
-                        ];
-                    }
-                ?>
-                    <h3><?php echo $profession_name; ?></h3>
-                    <div class="chart-container">
-                    <canvas id="chart-comparison-<?php echo $profession_id; ?>" style="width: 1200px; height: 400px;"></canvas>
-                    </div>
-                    <script>
-const ctx<?php echo $profession_id; ?> = document.getElementById('chart-comparison-<?php echo $profession_id; ?>').getContext('2d');
-new Chart(ctx<?php echo $profession_id; ?>, {
-    type: 'bar',
-    data: {
-        labels: <?php echo json_encode($pvk_names); ?>,
-        datasets: <?php echo json_encode($datasets); ?>
-    },
-    options: {
-        indexAxis: 'y',
-        maintainAspectRatio: false,
-        scales: {
-            x: {
-                beginAtZero: true,
-                title: {
-                                            display: true,
-                                            text: 'Прогресс',
-                                            font: {
-                                                style: 'italic'
-                                            }
-                                        }
-            },
-            y: {
-                ticks: {
-                    font: {
-                        size: 14
-                    },
-                    autoSkip: false
-                },
-                afterFit: function(scale) {
-                    scale.width = 900; // Устанавливаем ширину для длинных меток
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                position: 'top'
-            }
-        },
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: {
-            padding: {
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: 20
-            }
-        },
-    }
-});
-</script>
-                    <hr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.select2').select2({
-                placeholder: "Выберите",
-                allowClear: true
-            });
-
-            $('input[name="respondent_gender[]"], input[name="respondent_age[]"]').on('change', function() {
-                var genders = $('input[name="respondent_gender[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                var ages = $('input[name="respondent_age[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                if (genders.length > 0 || ages.length > 0) {
-                    $('#respondent-select-container').show();
-                } else {
-                    $('#respondent-select-container').hide();
-                }
-
-                $('#respondent_select option').each(function() {
-                    var show = true;
-
-                    if (genders.length > 0 && !genders.includes($(this).data('gender'))) {
+                    if (!inRange) {
                         show = false;
                     }
-
-                    if (ages.length > 0) {
-                        var ageRange = ages.map(function(age) {
-                            return age.split('-');
-                        });
-
-                        var respondentAge = $(this).data('age');
-                        var inRange = ageRange.some(function(range) {
-                            return respondentAge >= range[0] && respondentAge <= range[1];
-                        });
-
-                        if (!inRange) {
-                            show = false;
-                        }
-                    }
-
-                    $(this).toggle(show);
-                });
-
-                $('#respondent_select').trigger('change');
-            });
-
-            $('#respondent_select').on('change', function() {
-                if ($(this).val().length > 0) {
-                    $('#view-results-btn').show();
-                } else {
-                    $('#view-results-btn').hide();
                 }
+
+                $(this).toggle(show);
             });
+
+            $('#respondent_select').trigger('change');
         });
-    </script>
+
+        $('#respondent_select').on('change', function() {
+            if ($(this).val().length > 0) {
+                $('#view-results-btn').show();
+            } else {
+                $('#view-results-btn').hide();
+            }
+        });
+    });
+</script>
+</main>
 </body>
 </html>
 
 <?php
-$mysqli->close();
+$conn->close();
 ?>

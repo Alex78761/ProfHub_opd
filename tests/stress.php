@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 $sql = "SELECT role FROM users WHERE id = $user_id";
-$result = $mysqli->query($sql);
+$result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
@@ -19,13 +19,13 @@ if ($result->num_rows > 0) {
     die("Пользователь не найден.");
 }
 
-function get_pulse_data($mysqli, $user_id = null) {
+function get_pulse_data($conn, $user_id = null) {
     if ($user_id) {
-        $sql = "SELECT * FROM pulse_data WHERE user_id = $user_id ORDER BY recorded_at DESC";
+        $sql = "SELECT * FROM pulse_data WHERE user_id = $user_id ORDER BY COALESCE(timestamp, '1970-01-01 00:00:00') DESC";
     } else {
-        $sql = "SELECT pd.*, r.name FROM pulse_data pd JOIN respondents r ON pd.user_id = r.user_id ORDER BY recorded_at DESC";
+        $sql = "SELECT pd.*, r.name FROM pulse_data pd JOIN respondents r ON pd.user_id = r.user_id ORDER BY COALESCE(pd.timestamp, '1970-01-01 00:00:00') DESC";
     }
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
     $pulse_data = [];
     while ($row = $result->fetch_assoc()) {
         $pulse_data[] = $row;
@@ -33,9 +33,9 @@ function get_pulse_data($mysqli, $user_id = null) {
     return $pulse_data;
 }
 
-function get_respondents($mysqli) {
+function get_respondents($conn) {
     $sql = "SELECT u.id, r.name, r.gender, r.age FROM users u JOIN respondents r ON u.id = r.user_id";
-    $result = $mysqli->query($sql);
+    $result = $conn->query($sql);
     $respondents = [];
     while ($row = $result->fetch_assoc()) {
         $respondents[] = $row;
@@ -58,8 +58,8 @@ function get_pulse_color($pulse) {
     }
 }
 
-$pulse_data = get_pulse_data($mysqli, $user_id);
-$respondents = get_respondents($mysqli);
+$pulse_data = get_pulse_data($conn, $user_id);
+$respondents = get_respondents($conn);
 
 $expert_stress = 0;
 $user_stress = 0;
@@ -92,84 +92,30 @@ if ($role === 'expert') {
 <head>
     <meta charset="UTF-8">
     <title>Данные Пульса</title>
+    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="../css/header.css">
+    <script src="../widgets/pulse-widget/pulse-widget.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            width: 1000px;
-            margin: 70px auto;
-        }
-        h1, h2, h3 {
-            color: #333;
-            text-align: center;
-        }
-        form {
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-        select, input[type="submit"], input[type="checkbox"] {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #218838;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f8f8f8;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            margin-bottom: 20px;
-        }
-        .checkbox-container {
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .red { background-color: #f8d7da; }
-        .yellow { background-color: #fff3cd; }
-        .green { background-color: #d4edda; }
+        main { padding-top: 100px; }
     </style>
 </head>
 <body>
-<header>
-<p><a href="tests.php">Назад</a></p>
-    <p><a href="../index.php">Домой</a></p>
-    <?php if (isset($_SESSION['username'])): ?>
-        <p><a href="../account.php">Личный кабинет</a></p>
-    <?php endif; ?>
-</header>
+<?php include '../header.php'; ?>
+<main class="container">
+  <div class="card">
+    <div id="pulse-widget-container"></div>
+    <div class="card" style="margin-bottom:2rem;">
+      <h2>Как работает анализ стресса</h2>
+      <ul>
+        <li><b>Виджет пульса</b> — на любой странице можно запустить виджет, который будет собирать и отображать ваш пульс в реальном времени, а также сохранять результаты для анализа.</li>
+        <li><b>Анализ стресса</b> — на этой странице вы видите свой коэффициент стресса на основе биосигналов (пульса), а также можете сравнить себя с другими респондентами. Эксперты могут фильтровать и сравнивать результаты по полу и возрасту.</li>
+        <li><b>Личный кабинет</b> — здесь вы можете посмотреть свою статистику, результаты тестов и биосигналов.</li>
+        <li><b>Навигация</b> — используйте меню сверху для перехода между разделами.</li>
+      </ul>
+    </div>
     <div class="container">
         <h1>Данные Пульса</h1>
         <?php if ($role === 'expert'): ?>
@@ -194,7 +140,7 @@ if ($role === 'expert') {
                                 <td class="<?php echo get_pulse_color($data['min_pulse']); ?>"><?php echo htmlspecialchars($data['min_pulse']); ?></td>
                                 <td class="<?php echo get_pulse_color($data['avg_pulse']); ?>"><?php echo htmlspecialchars(calculate_stress_coefficient($data['avg_pulse'])); ?></td>
                                 <td><?php echo htmlspecialchars($data['time_recorded']); ?></td>
-                                <td><?php echo htmlspecialchars($data['recorded_at']); ?></td>
+                                <td><?php echo htmlspecialchars($data['timestamp']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -233,7 +179,7 @@ if ($role === 'expert') {
                     $selected_data = [];
                     $stress_coefficients = [];
                     foreach ($selected_respondent_ids as $selected_respondent_id) {
-                        $respondent_data = get_pulse_data($mysqli, $selected_respondent_id);
+                        $respondent_data = get_pulse_data($conn, $selected_respondent_id);
                         $selected_data[$selected_respondent_id] = $respondent_data;
                         $total_stress = 0;
                         $count = 0;
@@ -301,7 +247,7 @@ if ($role === 'expert') {
                                         <td class="<?php echo get_pulse_color($pulse['min_pulse']); ?>"><?php echo htmlspecialchars($pulse['min_pulse']); ?></td>
                                         <td class="<?php echo get_pulse_color($pulse['avg_pulse']); ?>"><?php echo htmlspecialchars(calculate_stress_coefficient($pulse['avg_pulse'])); ?></td>
                                         <td><?php echo htmlspecialchars($pulse['time_recorded']); ?></td>
-                                        <td><?php echo htmlspecialchars($pulse['recorded_at']); ?></td>
+                                        <td><?php echo htmlspecialchars($pulse['timestamp']); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -364,7 +310,7 @@ if ($role === 'expert') {
                                 <td class="<?php echo get_pulse_color($data['min_pulse']); ?>"><?php echo htmlspecialchars($data['min_pulse']); ?></td>
                                 <td class="<?php echo get_pulse_color($data['avg_pulse']); ?>"><?php echo htmlspecialchars(calculate_stress_coefficient($data['avg_pulse'])); ?></td>
                                 <td><?php echo htmlspecialchars($data['time_recorded']); ?></td>
-                                <td><?php echo htmlspecialchars($data['recorded_at']); ?></td>
+                                <td><?php echo htmlspecialchars($data['timestamp']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -379,8 +325,11 @@ if ($role === 'expert') {
         const respondentSelect = document.getElementById('respondent-select');
 
         function filterRespondents() {
-            const gender = document.getElementById('gender').value;
-            const age = document.getElementById('age').value;
+            const genderElem = document.getElementById('gender');
+            const ageElem = document.getElementById('age');
+            const gender = genderElem ? genderElem.value : '';
+            const age = ageElem ? ageElem.value : '';
+            if (!respondentSelect) return;
             const filteredRespondents = respondents.filter(respondent => {
                 let genderMatch = !gender || respondent.gender === gender;
                 let ageMatch = !age || (respondent.age >= age && respondent.age < parseInt(age) + 5);
@@ -426,16 +375,26 @@ if ($role === 'expert') {
             });
         }
 
-        document.getElementById('filter-form').addEventListener('change', function(e) {
+        const filterForm = document.getElementById('filter-form');
+        if (filterForm) {
+            filterForm.addEventListener('change', function(e) {
             e.preventDefault();
             filterRespondents();
         });
+        }
 
         document.addEventListener('DOMContentLoaded', filterRespondents);
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new PulseWidget('pulse-widget-container');
+        });
+    </script>
+  </div>
+</main>
 </body>
 </html>
 
 <?php
-$mysqli->close();
+$conn->close();
 ?>
