@@ -32,7 +32,7 @@ if (isset($_SESSION['user_id'])) {
                 <?php if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'expert', 'consultant'])): ?>
                 <li class="nav-item dropdown">
                     <div class="dropdown-wrapper">
-                        <button class="nav-link dropdown-btn<?php if(in_array(basename($_SERVER['PHP_SELF']), ['tests.php', 'test_results.php'])) echo ' active'; ?>">
+                        <button class="nav-link dropdown-btn<?php if(in_array(basename($_SERVER['PHP_SELF']), ['tests.php', 'test_results.php'])) echo ' active'; ?>" style="color:#fff !important;">
                             Тесты <i class="fas fa-chevron-down dropdown-arrow"></i>
                         </button>
                         <div class="dropdown-menu">
@@ -40,13 +40,13 @@ if (isset($_SESSION['user_id'])) {
                             <a class="dropdown-item<?php if(basename($_SERVER['PHP_SELF'])=='test_results.php') echo ' active'; ?>" href="/view_test_results.php">Результаты тестов</a>
                         </div>
                     </div>
-                </li>
-                <?php endif; ?>
+                            </li>
+                                    <?php endif; ?>
                 
                 <li class="nav-item">
                     <a class="nav-link<?php if(basename($_SERVER['PHP_SELF'])=='chat.php') echo ' active'; ?>" href="/chat.php">Чат</a>
-                </li>
-            </ul>
+                            </li>
+                        </ul>
         </nav>
 
         <!-- Профиль/авторизация -->
@@ -62,9 +62,9 @@ if (isset($_SESSION['user_id'])) {
                         <i class="fas fa-chevron-down dropdown-arrow"></i>
                     </button>
                     <div class="dropdown-menu profile-menu" id="profileDropdown">
-                        <a class="dropdown-item" href="/account.php">
+                        <!-- <a class="dropdown-item" href="/account.php">
                             <i class="fas fa-user"></i> Личный кабинет
-                        </a>
+                        </a> -->
                         <a class="dropdown-item" href="/suitability.php">
                             <i class="fas fa-balance-scale"></i> Анализ пригодности
                         </a>
@@ -100,6 +100,119 @@ if (isset($_SESSION['user_id'])) {
 <?php endif; ?>
 
 <style>
+.header {
+    background: #181e22;
+    width: 100%;
+    min-height: 56px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    position: relative;
+    z-index: 100;
+}
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 64px;
+}
+.logo {
+    font-size: 2em;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    margin-right: 32px;
+    display: flex;
+    align-items: center;
+}
+.main-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+.nav-list {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+.nav-link {
+    color: #fff;
+    font-size: 1.15em;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.nav-link.active, .nav-link:hover {
+    color: #1affb3;
+    background: rgba(127,215,255,0.07);
+}
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 160px;
+    justify-content: flex-end;
+}
+.profile-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.1em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: background 0.18s;
+}
+.profile-btn:hover {
+    background: #23282e;
+}
+.profile-dropdown {
+    position: relative;
+}
+.profile-menu {
+    right: 0;
+    left: auto;
+}
+@media (max-width: 900px) {
+    .header-container {
+        padding: 0 10px;
+    }
+    .nav-list {
+        gap: 18px;
+    }
+    .logo {
+        font-size: 1.3em;
+        margin-right: 12px;
+    }
+}
+@media (max-width: 600px) {
+    .header-container {
+        flex-direction: column;
+        height: auto;
+        padding: 0 2vw;
+        gap: 8px;
+    }
+    .main-nav {
+        width: 100%;
+        justify-content: center;
+    }
+    .auth-section {
+        min-width: unset;
+        width: 100%;
+        justify-content: center;
+    }
+}
 /* Добавляем стили для выпадающего меню тестов */
 .dropdown-wrapper {
     position: relative;
@@ -151,6 +264,15 @@ if (isset($_SESSION['user_id'])) {
     height: 1px;
     background-color: #e9ecef;
     margin: 4px 0;
+}
+
+.header .main-nav .nav-link.active,
+.header .main-nav .nav-link.active:focus,
+.header .main-nav .nav-link.active:visited,
+.header .main-nav .dropdown-btn.active,
+.header .main-nav .dropdown-btn.active:focus,
+.header .main-nav .dropdown-btn.active:visited {
+    color: #fff !important;
 }
 </style>
 
