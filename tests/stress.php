@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once "../db-connect.php";
+require '../db_connect.php';
+require '../widgets/pulse-widget/pulse-widget-include.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -99,7 +100,106 @@ if ($role === 'expert') {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../widgets/pulse-widget/pulse-widget.js"></script>
     <style>
-        main { padding-top: 100px; }
+        body {
+            background: linear-gradient(135deg, #181e22 0%, #23282e 100%);
+            color: #f3f3f3;
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        main.container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 0 60px 0;
+        }
+        .card {
+            background: rgba(34, 39, 46, 0.65);
+            border-radius: 28px;
+            box-shadow: 0 8px 40px 0 rgba(0,0,0,0.25), 0 1.5px 8px 0 rgba(127,215,255,0.04);
+            padding: 38px 34px 28px 34px;
+            margin-bottom: 2.8rem;
+            backdrop-filter: blur(8px);
+            border: 1.5px solid rgba(127,215,255,0.10);
+        }
+        h1, h2, h3 {
+            color: #7fd7ff;
+            font-weight: 800;
+            margin-bottom: 1.2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.92);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+            font-size: 1.08em;
+        }
+        th, td {
+            padding: 16px 12px;
+            text-align: center;
+        }
+        th {
+            background: #1a232b;
+            color: #7fd7ff;
+            font-weight: 700;
+            font-size: 1.13em;
+        }
+        tr:nth-child(even) td {
+            background: #23282e;
+        }
+        tr:nth-child(odd) td {
+            background: #181e22;
+        }
+        tr:hover td {
+            background: #2a2f38;
+            transition: background 0.18s;
+        }
+        .red { color: #ff5c5c; font-weight: 700; }
+        .yellow { color: #ffe066; font-weight: 700; }
+        .green { color: #7fff7f; font-weight: 700; }
+        input[type="submit"], button {
+            background: linear-gradient(90deg,#7fd7ff 60%,#7fff7f 100%);
+            color: #222;
+            font-weight: 700;
+            border: none;
+            border-radius: 1.2em;
+            padding: 0.7em 2.2em;
+            font-size: 1.15em;
+            box-shadow: 0 2px 16px #7fd7ff44;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-top: 1em;
+        }
+        input[type="submit"]:hover, button:hover {
+            background: linear-gradient(90deg,#7fff7f 60%,#7fd7ff 100%);
+            color: #111;
+            box-shadow: 0 4px 24px #7fff7f44;
+        }
+        select, input[type="number"] {
+            background: #23282e;
+            color: #f3f3f3;
+            border: 2px solid #7fd7ff;
+            border-radius: 1em;
+            padding: 0.5em 1em;
+            font-size: 1.1em;
+            margin-right: 1em;
+            margin-bottom: 1em;
+        }
+        .checkbox-container {
+            display: inline-block;
+            margin: 0.5em 1em 0.5em 0;
+            background: rgba(34,39,46,0.85);
+            border-radius: 1em;
+            padding: 0.5em 1.2em;
+            color: #7fd7ff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px #7fd7ff22;
+        }
+        @media (max-width: 700px) {
+            .card { padding: 1.2rem; }
+            th, td { padding: 0.7rem 0.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -107,15 +207,15 @@ if ($role === 'expert') {
 <main class="container">
   <div class="card">
     <div id="pulse-widget-container"></div>
-    <div class="card" style="margin-bottom:2rem;">
-      <h2>Как работает анализ стресса</h2>
-      <ul>
-        <li><b>Виджет пульса</b> — на любой странице можно запустить виджет, который будет собирать и отображать ваш пульс в реальном времени, а также сохранять результаты для анализа.</li>
-        <li><b>Анализ стресса</b> — на этой странице вы видите свой коэффициент стресса на основе биосигналов (пульса), а также можете сравнить себя с другими респондентами. Эксперты могут фильтровать и сравнивать результаты по полу и возрасту.</li>
-        <li><b>Личный кабинет</b> — здесь вы можете посмотреть свою статистику, результаты тестов и биосигналов.</li>
-        <li><b>Навигация</b> — используйте меню сверху для перехода между разделами.</li>
-      </ul>
-    </div>
+<div class="card" style="margin-bottom:2rem;">
+  <h2>Как работает анализ стресса</h2>
+  <ul>
+    <li><b>Виджет пульса</b> — на любой странице можно запустить виджет, который будет собирать и отображать ваш пульс в реальном времени, а также сохранять результаты для анализа.</li>
+    <li><b>Анализ стресса</b> — на этой странице вы видите свой коэффициент стресса на основе биосигналов (пульса), а также можете сравнить себя с другими респондентами. Эксперты могут фильтровать и сравнивать результаты по полу и возрасту.</li>
+    <li><b>Личный кабинет</b> — здесь вы можете посмотреть свою статистику, результаты тестов и биосигналов.</li>
+    <li><b>Навигация</b> — используйте меню сверху для перехода между разделами.</li>
+  </ul>
+</div>
     <div class="container">
         <h1>Данные Пульса</h1>
         <?php if ($role === 'expert'): ?>
